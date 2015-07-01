@@ -1,0 +1,456 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: macrofusion\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2011-11-24 18:08+CET\n"
+"PO-Revision-Date: 2012-02-03 20:24+0300\n"
+"Last-Translator: Рыжих Виктор <victorr2007@yandex.ru>\n"
+"Language-Team: home\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Language: Russian\n"
+"X-Poedit-Country: RUSSIAN FEDERATION\n"
+"X-Poedit-SourceCharset: utf-8\n"
+
+#: macrofusion.py:95
+msgid "Generating %s thumbnail failed."
+msgstr "Не удалось создать миниатюру для %s."
+
+#: macrofusion.py:143
+msgid ""
+"Can't find Enfuse.\n"
+"Please check enblend/enfuse is installed.\n"
+"Stopping..."
+msgstr ""
+"Не найден Enfuse.\n"
+"Пожалуйста, проверьте, установлен ли enblend/enfuse.\n"
+"Останов..."
+
+#: macrofusion.py:148
+msgid "Will use all the powers of your CPU!"
+msgstr "Будут использоваться все возможности вашего процессора!"
+
+#: macrofusion.py:166
+msgid "CPU Cores: %s"
+msgstr "Ядер ЦП: %s"
+
+#: macrofusion.py:271
+msgid ""
+"Exiftool is missing!\n"
+"\n"
+" Cannot copy exif info."
+msgstr ""
+"Exiftool отсутствует!\n"
+"\n"
+" Не удается скопировать информацию EXIF."
+
+#: macrofusion.py:278
+msgid ""
+"Hugin tools (align_image_stack) are missing !\n"
+"\n"
+" Cannot auto align images."
+msgstr ""
+"Инструменты Hugin (align_image_stack) отсутствуют!\n"
+"\n"
+" Невозможно автоматический выровнять изображения."
+
+#: macrofusion.py:356
+msgid ""
+".\n"
+"\n"
+" Revert to default value."
+msgstr ""
+".\n"
+"\n"
+" Вернитесь к значению по умолчанию."
+
+#: macrofusion.py:356
+msgid ""
+"No such application!\n"
+"\n"
+" Cannot find "
+msgstr ""
+"Нет такого приложения!\n"
+"\n"
+" Не удается найти "
+
+#: macrofusion.py:379
+msgid "Image"
+msgstr "Изображение"
+
+#: macrofusion.py:385
+msgid "Thumbnail"
+msgstr "Миниатюра"
+
+#: macrofusion.py:439
+#: macrofusion.py:578
+msgid ""
+"Please add or activate at least two images.\n"
+"\n"
+" Cannot do anything smart with the one or no image."
+msgstr ""
+"Пожалуйста, добавьте или активируйте по крайней мере два изображения.\n"
+"\n"
+" Невозможно сделать что-то умное с одним изображением или без него."
+
+#: macrofusion.py:502
+msgid "Calculating preview..."
+msgstr "Создается предпросмотр"
+
+#: macrofusion.py:507
+msgid "Preview generated"
+msgstr "Предпросмотр создан"
+
+#: macrofusion.py:533
+msgid ""
+"No preview, no output, no edit.\n"
+"\n"
+" Game Over."
+msgstr ""
+"Нет предпросмотра, нет вывода, нет редактирования.\n"
+"\n"
+" Конец Игры."
+
+#: macrofusion.py:553
+msgid "<b>Model:</b> "
+msgstr "<b>Модель:</b> "
+
+#: macrofusion.py:554
+msgid "<b>Date:</b> "
+msgstr "<b>Дата:</b> "
+
+#: macrofusion.py:555
+msgid "<b>Focal length:</b> "
+msgstr "<b>Фокусное расстояние:</b> "
+
+#: macrofusion.py:556
+msgid "<b>Aperture:</b> F/"
+msgstr "<b>Относительное отверстие:</b> F/"
+
+#: macrofusion.py:557
+msgid "<b>Exposure Time:</b> "
+msgstr "<b>Время выдержки:</b> "
+
+#: macrofusion.py:575
+msgid ""
+"Can't overwrite input image!\n"
+"\n"
+" Please change the output filename."
+msgstr ""
+"Невозможно перезаписать исходное изображение!\n"
+"\n"
+"Пожалуйста, измените имя выходного файла."
+
+#: macrofusion.py:630
+msgid "<b>Filename:</b> "
+msgstr "<b>Имя файла:</b> "
+
+#: macrofusion.py:630
+msgid "<b>Resolution:</b> "
+msgstr "<b>Разрешение:</b> "
+
+#: macrofusion.py:635
+msgid ""
+"Only JPEG and TIFF files are allowed.\n"
+"\n"
+"Cannot open:\n"
+msgstr ""
+"Разрешены только JPEG and TIFF файлы.\n"
+"\n"
+"Невозможно открыть:\n"
+
+#: macrofusion.py:654
+msgid "Add images..."
+msgstr "Добавить изображения..."
+
+#: macrofusion.py:666
+msgid "Open images..."
+msgstr "Открыть изображения..."
+
+#: macrofusion.py:717
+msgid "Save file..."
+msgstr "Сохранить файл..."
+
+#: macrofusion.py:762
+msgid ""
+"Please add two or more images.\n"
+"\n"
+" Cannot do anything smart with the one image."
+msgstr ""
+"Пожалуйста, добавьте два или более изображений.\n"
+"\n"
+"Невозможно сделать что-то умное с одним изображением."
+
+#: macrofusion.py:774
+msgid ":: Align photos..."
+msgstr ":: Выравнивание снимков..."
+
+#: macrofusion.py:780
+msgid ":: Fusion photos..."
+msgstr "::Сведение снимков..."
+
+#: macrofusion.py:803
+msgid "Fusion images..."
+msgstr "Сведение изображений..."
+
+#: macrofusion.py:811
+msgid "Fusion, please wait..."
+msgstr "Сведение, подождите пожалуйста..."
+
+#: macrofusion.py:816
+msgid "Fused !"
+msgstr "Соединен !"
+
+#: ui/DOFuseInterface2.glade:22
+msgid "_File"
+msgstr "Файл"
+
+#: ui/DOFuseInterface2.glade:65
+msgid "Remove All"
+msgstr "Удалить все"
+
+#: ui/DOFuseInterface2.glade:119
+msgid "H_elp"
+msgstr "Справка"
+
+#: ui/DOFuseInterface2.glade:209
+msgid "Exposure (default: 1)"
+msgstr "Экспозиция (по умолчанию: 1)"
+
+#: ui/DOFuseInterface2.glade:270
+msgid "Contrast (default: 0)"
+msgstr "Контраст (по умолчанию: 0)"
+
+#: ui/DOFuseInterface2.glade:330
+msgid "Saturation (default: 0.2)"
+msgstr "Насыщенность (по умолчанию: 0.2)"
+
+#: ui/DOFuseInterface2.glade:390
+msgid "Mean exposure (default: 0.5)"
+msgstr "Средняя экспозиция (по умолчанию: 0.5)"
+
+#: ui/DOFuseInterface2.glade:450
+msgid "Deviation (default: 0.2)"
+msgstr "Отклонение (по умолчанию: 0.2)"
+
+#: ui/DOFuseInterface2.glade:513
+msgid "<b>Fusion parameters</b>"
+msgstr "<b>Параметры сведения</b>"
+
+#: ui/DOFuseInterface2.glade:543
+msgid "Align"
+msgstr "Выровнять"
+
+#: ui/DOFuseInterface2.glade:561
+msgid "Autocrop"
+msgstr "Автоматически кадрировать"
+
+#: ui/DOFuseInterface2.glade:579
+msgid "Optimize image center shift"
+msgstr "Оптимизировать сномок сдвигом центра"
+
+#: ui/DOFuseInterface2.glade:598
+msgid "Optimize field of view"
+msgstr "Оптимизировать поле обзора"
+
+#: ui/DOFuseInterface2.glade:623
+msgid "<b>Align images</b>"
+msgstr "<b>Выравнивание снимков</b>"
+
+#: ui/DOFuseInterface2.glade:643
+msgid "Fusion"
+msgstr "Сведение"
+
+#: ui/DOFuseInterface2.glade:670
+msgid "Pyramid levels: "
+msgstr "Уровни пирамиды:"
+
+#: ui/DOFuseInterface2.glade:726
+msgid "Force HardMask "
+msgstr "Жёсткая маска "
+
+#: ui/DOFuseInterface2.glade:764
+msgid "Contrast window:"
+msgstr "Окно контраста:"
+
+#: ui/DOFuseInterface2.glade:827
+msgid "Min Curvature:"
+msgstr "Минимальная кривизна:"
+
+#: ui/DOFuseInterface2.glade:844
+msgid "%"
+msgstr "%"
+
+#: ui/DOFuseInterface2.glade:902
+msgid "EdgeScale:"
+msgstr "Масштаб края:"
+
+#: ui/DOFuseInterface2.glade:960
+msgid "EdgeScale"
+msgstr "Масштаб края"
+
+#: ui/DOFuseInterface2.glade:1035
+msgid "LceScale"
+msgstr ""
+
+#: ui/DOFuseInterface2.glade:1106
+msgid "LceFactor"
+msgstr ""
+
+#: ui/DOFuseInterface2.glade:1142
+msgid "Use CIECAM02 color profile"
+msgstr "Использовать цветовой профиль CIECAM02"
+
+#: ui/DOFuseInterface2.glade:1191
+msgid ""
+"Mean\n"
+"L-star\n"
+"Lightness\n"
+"Value\n"
+"Luminance"
+msgstr ""
+"Середина\n"
+"L-star\n"
+"Светлота\n"
+"Насыщенность\n"
+"Яркость"
+
+#: ui/DOFuseInterface2.glade:1207
+msgid "Gray projector:"
+msgstr "Проектор серого:"
+
+#: ui/DOFuseInterface2.glade:1244
+msgid "<b>Expert Options</b>"
+msgstr "<b>Опции эксперта</b>"
+
+#: ui/DOFuseInterface2.glade:1260
+msgid "Expert"
+msgstr "Эксперт"
+
+#: ui/DOFuseInterface2.glade:1294
+msgid "Preview size:"
+msgstr "Размер предосмотра:"
+
+#: ui/DOFuseInterface2.glade:1316
+#: ui/DOFuseInterface2.glade:1359
+msgid "The larger resolution - the longer it takes to generate preview."
+msgstr "Чем больше разрешение - тем больше времени требуется для подготовки предпросмотра."
+
+#: ui/DOFuseInterface2.glade:1335
+#: ui/DOFuseInterface2.glade:1632
+msgid "Width"
+msgstr "Ширина"
+
+#: ui/DOFuseInterface2.glade:1378
+#: ui/DOFuseInterface2.glade:1673
+msgid "Height"
+msgstr "Высота"
+
+#: ui/DOFuseInterface2.glade:1425
+msgid "Cache Size:"
+msgstr "Размер кеша:"
+
+#: ui/DOFuseInterface2.glade:1439
+msgid "1024 Mb (default)"
+msgstr "1024 МиБ (по умолчанию)"
+
+#: ui/DOFuseInterface2.glade:1495
+msgid "Bloc Size: "
+msgstr "Размер блока:"
+
+#: ui/DOFuseInterface2.glade:1509
+msgid "2048 kb (default)"
+msgstr "2048 КиБ (по умолчанию)"
+
+#: ui/DOFuseInterface2.glade:1569
+msgid "Final image size:"
+msgstr "Конечный размер:"
+
+#: ui/DOFuseInterface2.glade:1579
+#: ui/DOFuseInterface2.glade:1807
+msgid "Default"
+msgstr "По умолчанию"
+
+#: ui/DOFuseInterface2.glade:1714
+msgid "X-offset"
+msgstr "Смещение X"
+
+#: ui/DOFuseInterface2.glade:1755
+msgid "Y-offset"
+msgstr "Смещение Y"
+
+#: ui/DOFuseInterface2.glade:1793
+msgid "Jpeg compression:"
+msgstr "Сжатие JPEG:"
+
+#: ui/DOFuseInterface2.glade:1861
+msgid "Tiff compression: "
+msgstr "Сжатие TIFF:"
+
+#: ui/DOFuseInterface2.glade:1874
+msgid ""
+"None\n"
+"Packbits\n"
+"LZW\n"
+"Deflate"
+msgstr ""
+"Нет\n"
+"Packbits\n"
+"LZW\n"
+"Deflate"
+
+#: ui/DOFuseInterface2.glade:1912
+msgid "Edit with: "
+msgstr "Редактировать в: "
+
+#: ui/DOFuseInterface2.glade:1973
+msgid "<b>Software Options</b>"
+msgstr "<b>Опции программы</b>"
+
+#: ui/DOFuseInterface2.glade:1999
+msgid "Copy exif info ?"
+msgstr "Копировать данные EXIF?"
+
+#: ui/DOFuseInterface2.glade:2013
+msgid "<b>Exif</b>"
+msgstr "<b>EXIF</b>"
+
+#: ui/DOFuseInterface2.glade:2036
+msgid "Configuration"
+msgstr "Конфигурация"
+
+#: ui/DOFuseInterface2.glade:2068
+msgid "_Before/After"
+msgstr "До/После"
+
+#: ui/DOFuseInterface2.glade:2086
+msgid "_Preview"
+msgstr "_Предосмотр"
+
+#: ui/DOFuseInterface2.glade:2160
+msgid "<b>Photos</b>"
+msgstr "<b>Снимки</b>"
+
+#: ui/DOFuseInterface2.glade:2243
+msgid "<b>Action</b>"
+msgstr "<b>Действие</b>"
+
+#: ui/DOFuseInterface2.glade:2301
+msgid "<b>Preview</b>"
+msgstr "<b>Предосмотр</b>"
+
+#: ui/Progress.glade:20
+msgid "label"
+msgstr "Метка"
+
+#: ui/Progress.glade:50
+msgid "Close"
+msgstr "Закрыть"
+

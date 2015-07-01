@@ -1,0 +1,20 @@
+[Desktop Entry]
+Encoding=UTF-8
+Version=1.0
+Name=MacroFusion
+GenericName=MacroFusion
+Comment=Fusion images for greater DOF and/or DR
+Comment[ru]=Объединение снимков с вилкой экспозиции и фокусных стопок
+Comment[pl]=Łączy kadry o różnej ekspozycji lub głębi ostrości
+
+Type=Application
+Categories=Graphics;Photography;
+
+Exec=macrofusion %F
+TryExec=macrofusion
+Icon=macrofusion.png
+
+Terminal=false
+StartupNotify=true
+
+MimeType=application/x-mfusion;image/jpeg;image/tiff;

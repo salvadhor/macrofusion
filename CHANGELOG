@@ -1,0 +1,44 @@
+0.7.4 (22.04.2014)
+
+  * port to gtk3, python3
+  * pyexiv2 replaced by gexiv2 (disabled so far due to Ubuntu problems with gexiv2)
+  * bugfixes
+  * UI changes
+
+0.7.3 (19.02.2012)
+
+  * Bugfix: Proper opening/adding TIFF files
+  * pyexiv2 to read exif tags
+  * Russian translation (Alexandre Prokoudine, VictorR2007)
+
+0.7.2 (24.11.2011)
+
+  * Read exif info from photos - bugfixes
+  * Run align and fusion at least with two or more images - bugfixes
+  * Filenames from commandline - macrofusion %f (can be use for 'send
+    to macrofusion' from filemanager)
+  * Preview image in filechooser
+
+0.7 (17.11.2011)
+
+  * images list with thumbnails
+  * exif info in tooltips
+  * custom graphics editor
+  * UI improvements
+  * Russian translation (.desktop) from Alexandre Prokoudine
+
+0.6 (12.11.2011)
+
+  * Auto align images stack
+  * 'edit with' button sends output to graphics editor
+  * bugfixes
+
+0.5 (08.11.2011)
+
+  * proper values for Enfuse's options
+  * can determine and use multithread
+  * load/save preferences
+  * some modifications of GUI
+  * cleaning up after application exits
+  * system-wide install
+  * bugfixes

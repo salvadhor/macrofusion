@@ -1,0 +1,428 @@
+# French translations for PACKAGE package
+# Traductions françaises du paquet PACKAGE.
+# Copyright (C) 2009 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+#  <gholyo@free.fr>, 2009.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: macrofusion\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2011-11-17 12:16+0100\n"
+"PO-Revision-Date: 2011-11-17 12:30+0100\n"
+"Last-Translator: Dariusz Duma <dhor@toxic.net.pl>\n"
+"Language-Team: French\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: macrofusion.py:89
+#, python-format
+msgid "Generating %s thumbnail failed."
+msgstr "La création de la miniature %s a échoué."
+
+#: macrofusion.py:138
+msgid ""
+"Can't find Enfuse.\n"
+"Please check enblend/enfuse is installed.\n"
+"Stopping..."
+msgstr ""
+"Enfuse est introuvable.\n"
+"Veuillez vérifier que enfuse/enblend est bien installé sur votre système.\n"
+"Arrêt..."
+
+#: macrofusion.py:143
+msgid "Will use all the powers of your CPU!"
+msgstr ""
+
+#: macrofusion.py:163
+#, python-format
+msgid "CPU Cores: %s"
+msgstr ""
+
+#: macrofusion.py:269
+#, fuzzy
+msgid ""
+"Exiftool is missing!\n"
+"\n"
+" Cannot copy exif info."
+msgstr "Exiftool est manquant, la fonctionnalité de copie des données exif sera manquante."
+
+#: macrofusion.py:276
+msgid ""
+"Hugin tools (align_image_stack) are missing !\n"
+"\n"
+" Cannot auto align images."
+msgstr ""
+
+#: macrofusion.py:357
+msgid ""
+".\n"
+"\n"
+" Revert to default value."
+msgstr ""
+
+#: macrofusion.py:357
+msgid ""
+"No such application!\n"
+"\n"
+" Cannot find "
+msgstr ""
+
+#: macrofusion.py:380
+msgid "Image"
+msgstr ""
+
+#: macrofusion.py:386
+msgid "Thumbnail"
+msgstr ""
+
+#: macrofusion.py:439
+#: macrofusion.py:557
+msgid ""
+"Please add some images!\n"
+"\n"
+" Can't fuse anything."
+msgstr ""
+
+#: macrofusion.py:501
+msgid "Calculating preview..."
+msgstr "Calcul de la prévisualisation..."
+
+#: macrofusion.py:506
+msgid "Preview generated"
+msgstr "Prévisualisation générée"
+
+#: macrofusion.py:533
+msgid ""
+"No preview, no output, no edit.\n"
+"\n"
+" Game Over."
+msgstr ""
+
+#: macrofusion.py:554
+msgid ""
+"Can't overwrite input image!\n"
+"\n"
+" Please change the output filename."
+msgstr ""
+
+#: macrofusion.py:612
+msgid "Add images..."
+msgstr "Ajouter des images..."
+
+#: macrofusion.py:620
+msgid "Open images..."
+msgstr "Ouvrir..."
+
+#: macrofusion.py:644
+msgid "<b>Model:</b> "
+msgstr ""
+
+#: macrofusion.py:645
+#, fuzzy
+msgid "<b>Date:</b> "
+msgstr "<b>Action</b>"
+
+#: macrofusion.py:646
+msgid "<b>Focal length:</b> "
+msgstr ""
+
+#: macrofusion.py:647
+msgid "<b>Aperture:</b> F/"
+msgstr ""
+
+#: macrofusion.py:648
+#, fuzzy
+msgid "<b>Exposure Time:</b> "
+msgstr "<b>Prévisualisation</b>"
+
+#: macrofusion.py:652
+#, fuzzy
+msgid "<b>Filename:</b> "
+msgstr "<b>Paramètres de fusion</b>"
+
+#: macrofusion.py:652
+#, fuzzy
+msgid "<b>Resolution:</b> "
+msgstr "<b>Action</b>"
+
+#: macrofusion.py:688
+msgid "Save file..."
+msgstr "Enregistrer..."
+
+#: macrofusion.py:744
+msgid ":: Align photos..."
+msgstr ""
+
+#: macrofusion.py:750
+msgid ":: Fusion photos..."
+msgstr ""
+
+#: macrofusion.py:773
+#, fuzzy
+msgid "Fusion images..."
+msgstr "Ouvrir..."
+
+#: macrofusion.py:781
+msgid "Fusion, please wait..."
+msgstr "Fusion en cours, veuillez patienter..."
+
+#: macrofusion.py:786
+msgid "Fused !"
+msgstr "Fusion effectuée !"
+
+#: ui/DOFuseInterface2.glade:22
+msgid "_File"
+msgstr "_Fichier"
+
+#: ui/DOFuseInterface2.glade:65
+msgid "Remove All"
+msgstr ""
+
+#: ui/DOFuseInterface2.glade:119
+msgid "H_elp"
+msgstr "Aid_e"
+
+#: ui/DOFuseInterface2.glade:209
+msgid "Exposure (default: 1)"
+msgstr "Exposition (défaut : 1)"
+
+#: ui/DOFuseInterface2.glade:270
+msgid "Contrast (default: 0)"
+msgstr "Contraste (défaut : 0)"
+
+#: ui/DOFuseInterface2.glade:330
+msgid "Saturation (default: 0.2)"
+msgstr "Saturation (défaut : 0.2)"
+
+#: ui/DOFuseInterface2.glade:390
+msgid "Mean exposure (default: 0.5)"
+msgstr "Exposition moyenne (défaut : 0.5)"
+
+#: ui/DOFuseInterface2.glade:450
+msgid "Deviation (default: 0.2)"
+msgstr "Ecart type (défaut : 0.2)"
+
+#: ui/DOFuseInterface2.glade:513
+msgid "<b>Fusion parameters</b>"
+msgstr "<b>Paramètres de fusion</b>"
+
+#: ui/DOFuseInterface2.glade:543
+msgid "Align"
+msgstr ""
+
+#: ui/DOFuseInterface2.glade:561
+msgid "Autocrop"
+msgstr ""
+
+#: ui/DOFuseInterface2.glade:579
+msgid "Optimize image center shift"
+msgstr ""
+
+#: ui/DOFuseInterface2.glade:598
+msgid "Optimize field of view"
+msgstr ""
+
+#: ui/DOFuseInterface2.glade:623
+#, fuzzy
+msgid "<b>Align images</b>"
+msgstr "<b>Action</b>"
+
+#: ui/DOFuseInterface2.glade:643
+msgid "Fusion"
+msgstr "Fusion"
+
+#: ui/DOFuseInterface2.glade:670
+msgid "Pyramid levels: "
+msgstr "Niveaux de pyramide :"
+
+#: ui/DOFuseInterface2.glade:726
+msgid "Force HardMask "
+msgstr "Forcer le HardMask :"
+
+#: ui/DOFuseInterface2.glade:764
+msgid "Contrast window:"
+msgstr "Fenêtre de contraste :"
+
+#: ui/DOFuseInterface2.glade:827
+msgid "Min Curvature:"
+msgstr "Courbure minimale :"
+
+#: ui/DOFuseInterface2.glade:844
+msgid "%"
+msgstr "%"
+
+#: ui/DOFuseInterface2.glade:902
+msgid "EdgeScale:"
+msgstr "EdgeScale:"
+
+#: ui/DOFuseInterface2.glade:960
+msgid "EdgeScale"
+msgstr "EdgeScale"
+
+#: ui/DOFuseInterface2.glade:1035
+msgid "LceScale"
+msgstr "LceScale"
+
+#: ui/DOFuseInterface2.glade:1106
+msgid "LceFactor"
+msgstr "LceFactor"
+
+#: ui/DOFuseInterface2.glade:1142
+msgid "Use CIECAM02 color profile"
+msgstr "Utiliser le profil de couleur CIECMA02"
+
+#: ui/DOFuseInterface2.glade:1191
+msgid ""
+"Mean\n"
+"L-star\n"
+"Lightness\n"
+"Value\n"
+"Luminance"
+msgstr ""
+"Moyenne\n"
+"L-star\n"
+"Luminosité\n"
+"Valeur\n"
+"Luminance"
+
+#: ui/DOFuseInterface2.glade:1207
+msgid "Gray projector:"
+msgstr "Projection en niveaux de gris :"
+
+#: ui/DOFuseInterface2.glade:1244
+msgid "<b>Expert Options</b>"
+msgstr "<b>Options Expert</b>"
+
+#: ui/DOFuseInterface2.glade:1260
+msgid "Expert"
+msgstr "Expert"
+
+#: ui/DOFuseInterface2.glade:1294
+#, fuzzy
+msgid "Preview size:"
+msgstr "Taille des prévisualisations :"
+
+#: ui/DOFuseInterface2.glade:1316
+#: ui/DOFuseInterface2.glade:1359
+msgid "The larger resolution - the longer it takes to generate preview."
+msgstr ""
+
+#: ui/DOFuseInterface2.glade:1335
+#: ui/DOFuseInterface2.glade:1632
+msgid "Width"
+msgstr "Largeur"
+
+#: ui/DOFuseInterface2.glade:1378
+#: ui/DOFuseInterface2.glade:1673
+msgid "Height"
+msgstr "Hauteur"
+
+#: ui/DOFuseInterface2.glade:1425
+msgid "Cache Size:"
+msgstr "Taille du cache :"
+
+#: ui/DOFuseInterface2.glade:1439
+msgid "1024 Mb (default)"
+msgstr "1024 Mb (défaut)"
+
+#: ui/DOFuseInterface2.glade:1495
+msgid "Bloc Size: "
+msgstr "Taille du bloc :"
+
+#: ui/DOFuseInterface2.glade:1509
+msgid "2048 kb (default)"
+msgstr "2048 kb (défaut)"
+
+#: ui/DOFuseInterface2.glade:1569
+msgid "Final image size:"
+msgstr "Taille de l'image finale :"
+
+#: ui/DOFuseInterface2.glade:1579
+#: ui/DOFuseInterface2.glade:1807
+msgid "Default"
+msgstr "Défaut"
+
+#: ui/DOFuseInterface2.glade:1714
+msgid "X-offset"
+msgstr "X-offset"
+
+#: ui/DOFuseInterface2.glade:1755
+msgid "Y-offset"
+msgstr "Y-offset"
+
+#: ui/DOFuseInterface2.glade:1793
+msgid "Jpeg compression:"
+msgstr "Compression Jpeg :"
+
+#: ui/DOFuseInterface2.glade:1861
+#, fuzzy
+msgid "Tiff compression: "
+msgstr "Compression Tiff :"
+
+#: ui/DOFuseInterface2.glade:1874
+msgid ""
+"None\n"
+"Packbits\n"
+"LZW\n"
+"Deflate"
+msgstr ""
+"Aucune\n"
+"Packbits\n"
+"LZW\n"
+"Deflate"
+
+#: ui/DOFuseInterface2.glade:1912
+msgid "Edit with: "
+msgstr ""
+
+#: ui/DOFuseInterface2.glade:1973
+msgid "<b>Software Options</b>"
+msgstr "<b>Options du programme</b>"
+
+#: ui/DOFuseInterface2.glade:1999
+msgid "Copy exif info ?"
+msgstr "Copier les données exif ?"
+
+#: ui/DOFuseInterface2.glade:2013
+msgid "<b>Exif</b>"
+msgstr "<b>Exif</b>"
+
+#: ui/DOFuseInterface2.glade:2036
+msgid "Configuration"
+msgstr "Configuration"
+
+#: ui/DOFuseInterface2.glade:2059
+msgid "_Before/After"
+msgstr ""
+
+#: ui/DOFuseInterface2.glade:2077
+msgid "_Preview"
+msgstr "_Prévisualisation"
+
+#: ui/DOFuseInterface2.glade:2151
+#, fuzzy
+msgid "<b>Photos</b>"
+msgstr "<b>Action</b>"
+
+#: ui/DOFuseInterface2.glade:2234
+msgid "<b>Action</b>"
+msgstr "<b>Action</b>"
+
+#: ui/DOFuseInterface2.glade:2292
+msgid "<b>Preview</b>"
+msgstr "<b>Prévisualisation</b>"
+
+#: ui/Progress.glade:20
+msgid "label"
+msgstr "label"
+
+#: ui/Progress.glade:50
+msgid "Close"
+msgstr "Fermer"
+
+#~ msgid "Fu_se"
+#~ msgstr "Fu_sion"
