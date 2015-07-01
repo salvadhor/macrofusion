@@ -29,7 +29,7 @@ You need:
 
 Local (archive .tar.gz):
 ------
-Unpack, go to the directory 'microfusion-0.X', run ./microfusion.py
+Unpack, go to the directory 'macrofusion-0.X', run ./macrofusion.py
 
 System wide:
 -------
