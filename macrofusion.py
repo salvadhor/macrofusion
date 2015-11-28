@@ -18,6 +18,7 @@ try:
     import cairo
     import random
     import urllib.parse
+    import signal
     from gi.repository import Gdk, Gtk, GObject, GdkPixbuf, GExiv2
 except:    
     print('An error occured. Python or one of its sub modules is absent...\nIt would be wise to check your python installation.')
@@ -901,6 +902,7 @@ class AproposFen:
 ###########################################################            
                         
 if __name__ == "__main__":
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
     donnees=Donnees()                                                          #Variables 
     Gui = Interface()                                                          #Interface
                                                                        
