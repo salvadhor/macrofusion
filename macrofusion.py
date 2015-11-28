@@ -17,6 +17,7 @@ try:
     import operator
     import cairo
     import random
+    import urllib.parse
     from gi.repository import Gdk, Gtk, GObject, GdkPixbuf, GExiv2
 except:    
     print('An error occured. Python or one of its sub modules is absent...\nIt would be wise to check your python installation.')
@@ -32,7 +33,7 @@ global session_images_bak
 session_images_bak=[]
 global session_options_bak
 session_options_bak=[]
-   
+
 APP = 'MacroFusion'
 __VERSION__='0.7.4'
 __LICENSE__='GPL'
@@ -76,7 +77,7 @@ def creer_miniature(chemin,taille):
     try:
         im = GdkPixbuf.Pixbuf.new_from_file_at_size(chemin, taille[0], taille[1])
 #        pb = Gtk.gdk.pixbuf_new_from_file(chemin)
-#	im = Interface.pixbuf2Image(Interface(),pb)
+#        im = Interface.pixbuf2Image(Interface(),pb)
 #        im = Image.open(chemin)
 #        im.thumbnail(taille)
 #        im.save(outfile, "JPEG")
@@ -114,11 +115,11 @@ class Donnees:
             if os.path.exists(prog): 
                 a=True
         return a
-   
+
+
 ##############################################################
 ###########Classe de l'interface##############################
 ##############################################################
-
 
 class Interface:
     """Interface pour le logiciel d'exposition-fusion enfuse"""
@@ -152,7 +153,7 @@ class Interface:
         self.win.set_title('MacroFusion' + __VERSION__)
                 
         #On chope le reste, et ca, ca va servir...
-        self.listeimages = self.gui.get_object("listeimages")  
+        self.listeimages = self.gui.get_object("listeimages")
         self.buttonajoutfichiers = self.gui.get_object("buttonajoutfichiers")
         self.buttonenleverfichier = self.gui.get_object("buttonenleverfichier")
         self.statusbar = self.gui.get_object("status1")
@@ -204,7 +205,7 @@ class Interface:
 
         self.spinbuttonhauteurprev = self.gui.get_object("spinbuttonhauteurprev")
         self.ajus_hauteup = Gtk.Adjustment(value=640, lower=128, upper=1280, step_incr=1, page_incr=1, page_size=0)
-        self.spinbuttonhauteurprev.set_adjustment(self.ajus_largeup)
+        self.spinbuttonhauteurprev.set_adjustment(self.ajus_hauteup)
         
         self.buttonpreview = self.gui.get_object("buttonpreview")
         self.checkbuttontiff = self.gui.get_object("checkbuttontiff")
@@ -279,7 +280,7 @@ class Interface:
             #self.checkbutton_a5_align.set_sensitive(False)
             self.messageinthebottle(_("Hugin tools (align_image_stack) are missing !\n\n Cannot auto align images."))            
             
-# Read values from config
+        # Read values from config
         self.conf = configparser.ConfigParser()
         if os.path.isfile(donnees.enfuse_dossier + '/mfusion.cfg'):
             self.conf.read(donnees.enfuse_dossier + '/mfusion.cfg')
@@ -317,7 +318,7 @@ class Interface:
             self.entryedit_field.set_text(self.conf.get('prefs', 'editor'))
         else:
             self.entryedit_field.set_text("gimp")
-            
+
         #On relie les signaux (cliques sur boutons, cochage des cases, ...) aux fonctions appropriées
         dic = { "on_mainwindow_destroy" : self.exit_app,
                 "on_buttonannuler_clicked" : self.exit_app,
@@ -343,7 +344,7 @@ class Interface:
         
         #initialisation de la liste d'images a fusionner
         self.inittreeview()
-                    
+      
     def exit_app(self, action):
         # cancel = self.autosave_image()
         # if cancel:
@@ -393,11 +394,21 @@ class Interface:
         self.colonneimages2.add_attribute(self.cell2, 'pixbuf', 2)
         self.cell2.set_property('visible', 1)
         
-        
         self.listeimages.set_rules_hint(True)
         self.select.connect("toggled", toggled_cb, (self.liststoreimport, 0))   #Pour que les boutons de selection marchent
-        
-       
+
+        # enable drag and drop destination for files
+        self.listeimages.enable_model_drag_dest([ ('STRING', 0, 0) ], Gdk.DragAction.DEFAULT)
+        self.listeimages.connect("drag_data_received", self.drag_data_received)
+
+    def drag_data_received(self, treeview, context, x, y, selection, info, etime):
+        files = selection.get_text().split()
+        # remove 'file:' part and unnecessary slashes or backslashes in path
+        files = [os.path.normpath(x.lstrip("file:")) for x in files]
+        # get rid of 'file:' and replace %xx escapes
+        files = [urllib.parse.unquote(x) for x in files]
+        self.put_files_to_the_list(files)
+
     def ouverture(self, widget):
         FenOuv=Fenetre_Ouvrir(self.liststoreimport,0)
         self.liststoreimport=FenOuv.get_model()
@@ -492,7 +503,10 @@ class Interface:
         if not self.checkbuttonbloc.get_active():
             options.append('-b ' + str(self.spinbuttonbloc.get_value_as_int()))
         if not self.checkbuttontaillefinale.get_active():
-            options.append('-f ' + str(self.spinbuttonlargeurfinale.get_value_as_int()) + 'x' + str(self.spinbuttonhauteurfinale.get_value_as_int()) + 'x' + str(self.spinbuttonxoff.get_value_as_int()) + 'x' + str(self.spinbuttonyoff.get_value_as_int()))     
+            options.append('-f ' + str(self.spinbuttonlargeurfinale.get_value_as_int()) + 'x'
+                                 + str(self.spinbuttonhauteurfinale.get_value_as_int()) + 'x'
+                                 + str(self.spinbuttonxoff.get_value_as_int()) + 'x'
+                                 + str(self.spinbuttonyoff.get_value_as_int()))
         if self.name.endswith(('.tif', '.tiff', '.TIF', '.TIFF')):
             tiffopt={0:"NONE", 1:"PACKBITS", 2:"LZW", 3:"DEFLATE"}
             options.append("--compression=" + tiffopt[self.combtiff.get_active()])
@@ -621,7 +635,6 @@ class Interface:
         return Image.fromstring("RGB",(width,height),pb.get_pixels() )
 
     def put_files_to_the_list(self, fichiers):
-        
         self.fichiers=fichiers
         self.tags2=''
         self.badfiles=[]
@@ -888,7 +901,6 @@ class AproposFen:
 ###########################################################            
                         
 if __name__ == "__main__":
-    
     donnees=Donnees()                                                          #Variables 
     Gui = Interface()                                                          #Interface
                                                                        
