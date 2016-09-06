@@ -5,6 +5,7 @@
 # License : GPLv3 : http://gplv3.fsf.org/
 
 try:
+
     import os, sys
     import os.path
     import subprocess
@@ -19,7 +20,13 @@ try:
     import random
     import urllib.parse
     import signal
+
+    from gi import require_version
+    require_version('Gtk', '3.0')
+    require_version('Gdk', '3.0')
+    require_version('GExiv2', '0.10')
     from gi.repository import Gdk, Gtk, GObject, GdkPixbuf, GExiv2
+
 except:    
     print('An error occured. Python or one of its sub modules is absent...\nIt would be wise to check your python installation.')
     sys.exit(1)    
