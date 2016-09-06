@@ -633,7 +633,7 @@ class Interface:
 
     def pixbuf2Image(self, pb):
         width,height = pb.get_width(),pb.get_height()
-        return Image.fromstring("RGB",(width,height),pb.get_pixels() )
+        return Image.frombytes("RGB",(width,height),pb.get_pixels() )
 
     def put_files_to_the_list(self, fichiers):
         self.fichiers=fichiers
