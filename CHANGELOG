@@ -1,3 +1,11 @@
+0.7.5 (07.09.2016)
+
+  * Added default directory for open and save dialogs in config file (~/.config/mfusion/mfusion.cfg)
+  * Added default filename suggestion (first file in image-pair with '-fused' postfix)
+  * Added version checks for libraries and fixed compatibiliy with PIL 3.0 library
+  * Added drag&drop capability to file-tree field
+  * Let CTRL+C kill pygtk application properly (bugfix)
+
 0.7.4 (22.04.2014)
 
   * port to gtk3, python3

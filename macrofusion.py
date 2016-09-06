@@ -43,7 +43,7 @@ global session_options_bak
 session_options_bak=[]
 
 APP = 'MacroFusion'
-__VERSION__='0.7.4'
+__VERSION__='0.7.5'
 __LICENSE__='GPL'
 __COPYRIGHT__='Dariusz Duma'
 __WEBSITE__='http://sourceforge.net/p/macrofusion'
@@ -113,8 +113,8 @@ class Donnees:
         if not os.path.isdir(self.previs_dossier):
             os.makedirs(self.previs_dossier)
             
-        self.default_folder=os.path.expanduser('~/')
-        self.default_file=""
+        self.default_folder = os.path.expanduser('~/')
+        self.default_file = ""
         
     def check_install(self, name):
         a=False
@@ -322,6 +322,11 @@ class Interface:
             self.combtiff.set_active(self.conf.getint('prefs', 'tiffcomp'))
         if self.conf.has_option('prefs', 'exif'):  
             self.checkbuttonexif.set_active(self.conf.getboolean('prefs', 'exif'))
+        if self.conf.has_option('prefs', 'default_folder'):  
+            donnees.default_folder = self.conf.get('prefs', 'default_folder')
+            if not os.path.isdir(donnees.default_folder):
+                print("Default folder '%s' doesn't exist, using '%s'" % (donnees.default_folder, os.path.expanduser('~/')))
+                donnees.default_folder = os.path.expanduser('~/')
         if self.conf.has_option('prefs', 'editor'):           
             self.entryedit_field.set_text(self.conf.get('prefs', 'editor'))
         else:
@@ -628,7 +633,7 @@ class Interface:
         conf.set('prefs', 'tiffcomp', str(self.combtiff.get_active()))
         conf.set('prefs', 'exif', str(self.checkbuttonexif.get_active()))
         conf.set('prefs', 'editor',  str(self.entryedit_field.get_text()))
-                
+        conf.set('prefs', 'default_folder', donnees.default_folder)         
         if not os.path.exists(donnees.enfuse_dossier):
             os.makedirs(donnees.enfuse_dossier)
         conf.write(open(donnees.enfuse_dossier + '/mfusion.cfg', 'w'))
@@ -709,10 +714,12 @@ class Fenetre_Ouvrir:
             self.fichiers = self.fenetre_ouvrir.get_filenames()
             self.tags2=''
             self.badfiles=[]
-            donnees.default_file = self.fichiers[0]
+            (path, file) = os.path.split(self.fichiers[0])
+            (filename, ext) = os.path.splitext(file)
+            donnees.default_file = filename+"-fused"+ext
             Gui.put_files_to_the_list(self.fichiers)
-            
-        donnees.default_folder=self.fenetre_ouvrir.get_current_folder()
+
+        donnees.default_folder = self.fenetre_ouvrir.get_current_folder()
         self.fenetre_ouvrir.destroy()
     
     def update_thumb_preview(self, file_chooser, preview):
@@ -748,13 +755,14 @@ class Fenetre_Parcourir:
                                                         Gtk.FileChooserAction.SAVE,
                                                         (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_SAVE, Gtk.ResponseType.OK))                                                   
         self.fenetre_ouvrir.set_current_folder(donnees.default_folder)
-        # self.fenetre_ouvrir.set_filename(donnees.default_file)
-        self.fenetre_ouvrir.set_current_name('output.jpg')
+        self.fenetre_ouvrir.set_current_name(donnees.default_file)
         self.fenetre_ouvrir.set_do_overwrite_confirmation(True)
         if (self.fenetre_ouvrir.run() == Gtk.ResponseType.OK):
-            self.resultat=self.fenetre_ouvrir.get_filename()
-                    
+            self.resultat = self.fenetre_ouvrir.get_filename()
+
+        donnees.default_folder = self.fenetre_ouvrir.get_current_folder()
         self.fenetre_ouvrir.destroy()
+
         
     def get_name(self):
         try:
@@ -806,7 +814,7 @@ class Thread_Preview(threading.Thread):
             session_options_bak=self.options_align
             session_images_bak=images_a_align
             Gui.statusbar.pop(15)
-        Gui.statusbar.push(15, _(":: Fusion photos..."))
+        Gui.statusbar.push(15, _(":: Fusing photos..."))
         print (self.options)
 
         command=[Gui.enfuser, "-o", donnees.previs_dossier + "/" + "preview.tif"] + self.options + images_a_fusionner
