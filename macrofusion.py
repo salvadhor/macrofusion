@@ -420,6 +420,9 @@ class Interface:
         files = [os.path.normpath(x.lstrip("file:")) for x in files]
         # get rid of 'file:' and replace %xx escapes
         files = [urllib.parse.unquote(x) for x in files]
+        (path, file) = os.path.split(files[0])
+        (filename, ext) = os.path.splitext(file)
+        donnees.default_file = filename+"-fused"+ext
         self.put_files_to_the_list(files)
 
     def ouverture(self, widget):
