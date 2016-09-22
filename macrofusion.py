@@ -20,6 +20,7 @@ try:
     import random
     import urllib.parse
     import signal
+    import tempfile
 
     from gi import require_version
     require_version('Gtk', '3.0')
@@ -80,8 +81,8 @@ def toggled_cb(cell, path, user_data):
     return
 
 # PLEASE REAPAIR!! Python-imaging can't open .tiff (or some of them)    
-def creer_miniature(chemin,taille):
-    outfile=donnees.previs_dossier + '/' + os.path.split(chemin)[1]
+def create_thumbnail(chemin,taille):
+    outfile=data.preview_folder + '/' + os.path.split(chemin)[1]
     try:
         im = GdkPixbuf.Pixbuf.new_from_file_at_size(chemin, taille[0], taille[1])
 #        pb = Gtk.gdk.pixbuf_new_from_file(chemin)
@@ -99,23 +100,30 @@ def creer_miniature(chemin,taille):
 ########Classe des données##########################
 ####################################################
 
-class Donnees:
+class data:
     """Données utiles"""
     def __init__(self):
-        self.install_dossier=sys.path[0]                                                #On recupere le dossier d'install
+        self.install_folder=sys.path[0]                                                #On recupere le folder d'install
         
-        self.home_dossier = (os.getenv('XDG_CONFIG_HOME') or os.path.expanduser('~/.config')) + '/mfusion'
-        # self.home_dossier = os.environ['HOME']                                          #On créé les dossiers pour mettre les preview
-        self.enfuse_dossier = self.home_dossier
-        self.previs_dossier = self.enfuse_dossier + "/preview"
-        if not os.path.isdir(self.enfuse_dossier):
-            os.makedirs(self.enfuse_dossier)
-        if not os.path.isdir(self.previs_dossier):
-            os.makedirs(self.previs_dossier)
-            
+        self.config_folder = (os.getenv('XDG_CONFIG_HOME') or os.path.expanduser('~/.config/mfusion'))
         self.default_folder = os.path.expanduser('~/')
+        self.temp_folder = tempfile.gettempdir()
         self.default_file = ""
-        
+        self.update_folders()
+
+    def update_folders(self):        
+        # save tmp files in current working folder
+        self.enfuse_folder  = self.temp_folder
+        self.preview_folder = self.temp_folder + "/preview"
+        if not os.path.exists(self.config_folder):
+            os.makedirs(self.config_folder)
+        if not os.path.exists(self.temp_folder):
+            os.makedirs(self.temp_folder)
+        if not os.path.exists(self.enfuse_folder):
+            os.makedirs(self.enfuse_folder)
+        if not os.path.exists(self.preview_folder):
+            os.makedirs(self.preview_folder)
+
     def check_install(self, name):
         a=False
         for dir in os.environ['PATH'].split(":"):
@@ -138,13 +146,13 @@ class Interface:
         Gtk.Window.set_default_icon_from_file(IMG + 'macrofusion.png') 
         
         self.cpus = multiprocessing.cpu_count()
-        if not donnees.check_install("enfuse"):
+        if not data.check_install("enfuse"):
             self.messageinthebottle(_("Can't find Enfuse.\nPlease check enblend/enfuse is installed.\nStopping..."))
             sys.exit()
 		        
         # Check cpus
-        if self.cpus>1 and donnees.check_install("enfuse-mp"):
-            print(_("Will use all the powers of your CPU!"))
+        if self.cpus > 1 and data.check_install("enfuse-mp"):
+            print("Will use all the powers of your CPU!")
             self.enfuser = "enfuse-mp"
         else:  
             self.enfuser = "enfuse"
@@ -162,7 +170,7 @@ class Interface:
                 
         #On chope le reste, et ca, ca va servir...
         self.listeimages = self.gui.get_object("listeimages")
-        self.buttonajoutfichiers = self.gui.get_object("buttonajoutfichiers")
+        self.buttonajoutfiles = self.gui.get_object("buttonajoutfiles")
         self.buttonenleverfichier = self.gui.get_object("buttonenleverfichier")
         self.statusbar = self.gui.get_object("status1")
         self.statusbar.push(1,(_("CPU Cores: %s") % self.cpus))
@@ -277,10 +285,10 @@ class Interface:
         self.combobox_desatmet.set_active(0)
         self.combtiff.set_active(0)
         
-        if not donnees.check_install('exiftool'):
+        if not data.check_install('exiftool'):
             self.checkbuttonexif.set_sensitive(False)
             self.messageinthebottle(_("Exiftool is missing!\n\n Cannot copy exif info."))
-        if not donnees.check_install('align_image_stack'):
+        if not data.check_install('align_image_stack'):
             self.checkbutton_a5_align.set_sensitive(False)
             self.checkbutton_a5_crop.set_sensitive(False)
             self.checkbutton_a5_field.set_sensitive(False)
@@ -290,8 +298,8 @@ class Interface:
             
         # Read values from config
         self.conf = configparser.ConfigParser()
-        if os.path.isfile(donnees.enfuse_dossier + '/mfusion.cfg'):
-            self.conf.read(donnees.enfuse_dossier + '/mfusion.cfg')
+        if os.path.isfile(data.config_folder + '/mfusion.cfg'):
+            self.conf.read(data.config_folder + '/mfusion.cfg')
         if self.conf.has_option('prefs', 'pwidth'):
             self.spinbuttonlargeurprev.set_value(self.conf.getint('prefs', 'pwidth'))
         if self.conf.has_option('prefs', 'pheight'):
@@ -323,10 +331,11 @@ class Interface:
         if self.conf.has_option('prefs', 'exif'):  
             self.checkbuttonexif.set_active(self.conf.getboolean('prefs', 'exif'))
         if self.conf.has_option('prefs', 'default_folder'):  
-            donnees.default_folder = self.conf.get('prefs', 'default_folder')
-            if not os.path.isdir(donnees.default_folder):
-                print("Default folder '%s' doesn't exist, using '%s'" % (donnees.default_folder, os.path.expanduser('~/')))
-                donnees.default_folder = os.path.expanduser('~/')
+            data.default_folder = self.conf.get('prefs', 'default_folder')
+            if not os.path.isdir(data.default_folder):
+                print("Default folder '%s' doesn't exist, using '%s'" % (data.default_folder, data.config_folder))
+                data.default_folder = os.path.expanduser('~/')
+            data.update_folders()
         if self.conf.has_option('prefs', 'editor'):           
             self.entryedit_field.set_text(self.conf.get('prefs', 'editor'))
         else:
@@ -337,9 +346,9 @@ class Interface:
                 "on_buttonannuler_clicked" : self.exit_app,
                 "on_menufilequit_activate" : self.exit_app,
                 "on_menufileopen_activate" : self.ouverture,
-                "on_buttonajoutfichiers_clicked" : self.ajout,
+                "on_buttonaddfiles_clicked" : self.ajout,
                 "on_menufileadd_activate" : self.ajout,
-                "on_buttonenleverfichier_clicked" : self.ttenlever,
+                "on_buttondelfiles_clicked" : self.ttenlever,
                 "on_menufileenlever_activate" : self.enlever,
                 "on_menufilettenlever_activate" : self.ttenlever,
                 "on_buttonpreview_clicked" : self.preview,
@@ -369,17 +378,17 @@ class Interface:
         sys.exit(0)        
     
     def check_editor(self, action):
-        if not donnees.check_install(self.entryedit_field.get_text()):
+        if not data.check_install(self.entryedit_field.get_text()):
             Gui.messageinthebottle(_("No such application!\n\n Cannot find ") + self.entryedit_field.get_text() + (_(".\n\n Revert to default value.")))
             self.entryedit_field.set_text("gimp")
             return False
         return True
         
     def cleanup(self):
-        # os.remove(donnees.enfuse_dossier + "/session.sav")
-        for self.files in os.walk(donnees.previs_dossier):
+        # os.remove(data.enfuse_folder + "/session.sav")
+        for self.files in os.walk(data.preview_folder):
             for self.filename in self.files[2]:
-                os.remove(donnees.previs_dossier + "/" + self.filename)
+                os.remove(data.preview_folder + "/" + self.filename)
         
     def inittreeview(self):
         """initialisation de la liste d'images a importer"""
@@ -422,26 +431,26 @@ class Interface:
         files = [urllib.parse.unquote(x) for x in files]
         (path, file) = os.path.split(files[0])
         (filename, ext) = os.path.splitext(file)
-        donnees.default_file = filename+"-fused"+ext
+        data.default_file = filename+"-fused"+ext
         self.put_files_to_the_list(files)
 
     def ouverture(self, widget):
-        FenOuv=Fenetre_Ouvrir(self.liststoreimport,0)
+        FenOuv=OpenFiles_Dialog(self.liststoreimport,0)
         self.liststoreimport=FenOuv.get_model()
         #self.raffraichissementlisteimages()
         
     def ajout(self, widget):
-        FenOuv=Fenetre_Ouvrir(self.liststoreimport,1)
+        FenOuv=OpenFiles_Dialog(self.liststoreimport,1)
         self.liststoreimport=FenOuv.get_model()
         #self.raffraichissementlisteimages()
         
     def raffraichissementlisteimages(self):
         #self.listeimages.set_model(self.liststoreimport)
-        self.treeselectionsuppr=self.listeimages.get_selection()                #pour récupérer quels fichiers sont selectionnés
+        self.treeselectionsuppr=self.listeimages.get_selection()                #pour récupérer quels files sont selectionnés
         self.treeselectionsuppr.set_mode(Gtk.SELECTION_MULTIPLE)                #Pour pouvoir en selectionner plusieurs
              
     def enlever(self, widget):
-        self.treeselectionsuppr=self.listeimages.get_selection()                #pour récupérer quels fichiers sont selectionnés
+        self.treeselectionsuppr=self.listeimages.get_selection()                #pour récupérer quels files sont selectionnés
         self.treeselectionsuppr.set_mode(Gtk.SELECTION_MULTIPLE)                #Pour pouvoir en selectionner plusieurs
         (model, pathlist) = self.treeselectionsuppr.get_selected_rows()
         for i in pathlist:
@@ -453,7 +462,7 @@ class Interface:
             
     def preview(self, widget):
         self.taille=(self.spinbuttonlargeurprev.get_value(), self.spinbuttonhauteurprev.get_value())
-        self.name=donnees.previs_dossier + "/" + "preview.tif"
+        self.name=data.preview_folder + "/" + "preview.tif"
         item=0
         if len(self.liststoreimport)>0:
             self.ref=list(zip(*self.liststoreimport))[0] 
@@ -538,19 +547,19 @@ class Interface:
         else:
             self.progressbar.set_fraction(1)
             self.progressbar.set_text(_("Preview generated"))
-            self.imagepreview.set_from_file(donnees.previs_dossier + "/" + "preview.tif")
+            self.imagepreview.set_from_file(data.preview_folder + "/" + "preview.tif")
             return False
 
     def baswitch(self, widget):
-        if (not int(self.buttonbeforeafter.get_relief())) and (os.path.exists(donnees.previs_dossier + "/preview_.tif")):
+        if (not int(self.buttonbeforeafter.get_relief())) and (os.path.exists(data.preview_folder + "/preview_.tif")):
             self.buttonbeforeafter.props.relief = Gtk.ReliefStyle.NONE
-            self.imagepreview.set_from_file(donnees.previs_dossier + "/preview_.tif")
-        elif os.path.exists(donnees.previs_dossier + "/preview_.tif"):
+            self.imagepreview.set_from_file(data.preview_folder + "/preview_.tif")
+        elif os.path.exists(data.preview_folder + "/preview_.tif"):
             self.buttonbeforeafter.props.relief = Gtk.ReliefStyle.NORMAL
-            self.imagepreview.set_from_file(donnees.previs_dossier + "/preview.tif")
+            self.imagepreview.set_from_file(data.preview_folder + "/preview.tif")
         
     def fusion(self,widget):
-        FenPar=Fenetre_Parcourir()
+        FenPar=SaveFiles_Dialog()
         self.name = FenPar.get_name()
         if self.name:
             if not re.search('\\.jpeg$|\\.jpg$|\\.tiff$|\\.tif$', self.name, flags=re.IGNORECASE):
@@ -558,7 +567,7 @@ class Interface:
             self.enroute('')
     
     def sendto(self, widget):
-        self.name=(donnees.previs_dossier + "/sendto.tif")
+        self.name=(data.preview_folder + "/sendto.tif")
         
         if not self.check_editor(0):
             return
@@ -598,7 +607,7 @@ class Interface:
         for item in self.liststoreimport:
             if item[0]:
                self.liste_images.append(item[1])
-               self.liste_aligned.append(donnees.previs_dossier + "/out" + format(index, "04d") + ".tif")
+               self.liste_aligned.append(data.preview_folder + "/out" + format(index, "04d") + ".tif")
                index += 1
         if not Gui.checkbutton_a5_align.get_active():
             self.liste_aligned=self.liste_images
@@ -608,7 +617,7 @@ class Interface:
         if len(self.liste_images) <= 1:
             self.messageinthebottle(_("Please add or activate at least two images.\n\n Cannot do anything smart with the one or no image."))
             return -1
-        command_a=['align_image_stack', '-a', donnees.previs_dossier + '/out'] + self.get_options_align() + self.liste_images
+        command_a=['align_image_stack', '-a', data.preview_folder + '/out'] + self.get_options_align() + self.liste_images
         command=[Gui.enfuser, "-o", self.name] + self.get_options() + self.liste_aligned
         ProFus=Progress_Fusion(command, command_a, self.liste_aligned, self.issend)
         
@@ -636,25 +645,19 @@ class Interface:
         conf.set('prefs', 'tiffcomp', str(self.combtiff.get_active()))
         conf.set('prefs', 'exif', str(self.checkbuttonexif.get_active()))
         conf.set('prefs', 'editor',  str(self.entryedit_field.get_text()))
-        conf.set('prefs', 'default_folder', donnees.default_folder)         
-        if not os.path.exists(donnees.enfuse_dossier):
-            os.makedirs(donnees.enfuse_dossier)
-        conf.write(open(donnees.enfuse_dossier + '/mfusion.cfg', 'w'))
-
-                # Also, save accel_map:
-        # Gtk.accel_map_save(self.config_dir + '/accel_map')
-
+        conf.set('prefs', 'default_folder', data.default_folder)
+        conf.write(open(data.config_folder+ '/mfusion.cfg', 'w'))
         return
 
     def pixbuf2Image(self, pb):
         width,height = pb.get_width(),pb.get_height()
         return Image.frombytes("RGB",(width,height),pb.get_pixels() )
 
-    def put_files_to_the_list(self, fichiers):
-        self.fichiers=fichiers
+    def put_files_to_the_list(self, files):
+        self.files=files
         self.tags2=''
         self.badfiles=[]
-        for fichier in self.fichiers:
+        for fichier in self.files:
             if re.search('\\.jpg$|\\.jpeg$|\\.tiff$|\\.tif$', fichier, flags=re.IGNORECASE):
                 pb = GdkPixbuf.Pixbuf.new_from_file(fichier)
                 im = self.pixbuf2Image(pb)
@@ -677,56 +680,57 @@ class Interface:
 ###########Classe pour choisir les images a fusionner###############
 ####################################################################
     
-class Fenetre_Ouvrir:
-    """La classe qui ouvre la fenetre de choix de fichiers, et qui retourne le ListStore par la methode get_model"""
+class OpenFiles_Dialog:
+    """La classe qui ouvre la fenetre de choix de files, et qui retourne le ListStore par la methode get_model"""
     def __init__(self,model,bitajout):
-        """Lance la fenetre de selection et créé la listsore a partir des fichiers selectionnés"""
+        """Lance la fenetre de selection et créé la listsore a partir des files selectionnés"""
         self.filtre=Gtk.FileFilter()
         self.filtre.add_mime_type("image/jpeg")
         self.filtre.add_mime_type("image/tiff")
         self.liststoreimport=model #on repart de l'ancien modele
         if bitajout:
-            self.fenetre_ouvrir = Gtk.FileChooserDialog(_("Add images..."), 
+            self.file_dialog = Gtk.FileChooserDialog(_("Add images..."), 
                                                         None, 
                                                         Gtk.FileChooserAction.OPEN,
                                                         #(Gtk.StockCancel, Gtk.ResponseCancel, Gtk.StockOpen, Gtk.ResponseOK))
                                                         (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,Gtk.STOCK_OK, Gtk.ResponseType.OK))
-            self.fenetre_ouvrir.set_select_multiple(True)
-            self.fenetre_ouvrir.set_current_folder(donnees.default_folder)
-            self.fenetre_ouvrir.set_filter(self.filtre)
-            self.fenetre_ouvrir.use_preview = True
+            self.file_dialog.set_select_multiple(True)
+            self.file_dialog.set_current_folder(data.default_folder)
+            self.file_dialog.set_filter(self.filtre)
+            self.file_dialog.use_preview = True
             self.previewidget = Gtk.Image()
-            self.fenetre_ouvrir.set_preview_widget(self.previewidget)
-            self.fenetre_ouvrir.connect("update-preview", self.update_thumb_preview, self.previewidget)
+            self.file_dialog.set_preview_widget(self.previewidget)
+            self.file_dialog.connect("update-preview", self.update_thumb_preview, self.previewidget)
         else:
-            self.fenetre_ouvrir = Gtk.FileChooserDialog(_("Open images..."), 
+            self.file_dialog = Gtk.FileChooserDialog(_("Open images..."), 
                                                        None, 
                                                        Gtk.FileChooserAction.OPEN,
                                                        #(Gtk.STOCK_CANCEL, Gtk.RESPONSE_CANCEL, Gtk.STOCK_OPEN, Gtk.RESPONSE_OK))
                                                        (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,Gtk.STOCK_OK, Gtk.ResponseType.OK))
-            self.fenetre_ouvrir.set_select_multiple(True) 
-            self.fenetre_ouvrir.set_current_folder(donnees.default_folder)
-            self.fenetre_ouvrir.set_filter(self.filtre)
-            self.fenetre_ouvrir.use_preview = True
+            self.file_dialog.set_select_multiple(True) 
+            self.file_dialog.set_current_folder(data.default_folder)
+            self.file_dialog.set_filter(self.filtre)
+            self.file_dialog.use_preview = True
             self.previewidget = Gtk.Image()
-            self.fenetre_ouvrir.set_preview_widget(self.previewidget)
-            self.fenetre_ouvrir.connect("update-preview", self.update_thumb_preview, self.previewidget)
+            self.file_dialog.set_preview_widget(self.previewidget)
+            self.file_dialog.connect("update-preview", self.update_thumb_preview, self.previewidget)
             self.liststoreimport.clear()     #On remet le model a 0 (oublie des anciennes images)
                  
-        if (self.fenetre_ouvrir.run() == Gtk.ResponseType.OK):
-            self.fichiers = self.fenetre_ouvrir.get_filenames()
+        if (self.file_dialog.run() == Gtk.ResponseType.OK):
+            self.files = self.file_dialog.get_filenames()
             self.tags2=''
             self.badfiles=[]
-            (path, file) = os.path.split(self.fichiers[0])
+            (path, file) = os.path.split(self.files[0])
             (filename, ext) = os.path.splitext(file)
-            donnees.default_file = filename+"-fused"+ext
-            Gui.put_files_to_the_list(self.fichiers)
+            data.default_file = filename+"-fused"+ext
+            Gui.put_files_to_the_list(self.files)
 
-        donnees.default_folder = self.fenetre_ouvrir.get_current_folder()
-        self.fenetre_ouvrir.destroy()
+        data.default_folder = self.file_dialog.get_current_folder()
+        data.update_folders()
+        self.file_dialog.destroy()
     
     def update_thumb_preview(self, file_chooser, preview):
-        if not self.fenetre_ouvrir.use_preview:
+        if not self.file_dialog.use_preview:
             return
         filename = file_chooser.get_preview_filename()
         try:
@@ -735,7 +739,7 @@ class Fenetre_Ouvrir:
             self.have_preview = True
         except:
             self.have_preview = False
-        self.fenetre_ouvrir.set_preview_widget_active(self.have_preview)
+        self.file_dialog.set_preview_widget_active(self.have_preview)
         return
                  
     def get_model(self):
@@ -749,24 +753,23 @@ class Fenetre_Ouvrir:
 #########Classe pour la fenetre pour choisir le fichier final########
 #####################################################################
 
-class Fenetre_Parcourir:
+class SaveFiles_Dialog:
     """La classe qui ouvre la fenetre de choix pour enregistrer le fichier"""          
     def __init__(self):
         
-        self.fenetre_ouvrir = Gtk.FileChooserDialog(_("Save file..."), 
-                                                        None, 
-                                                        Gtk.FileChooserAction.SAVE,
-                                                        (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_SAVE, Gtk.ResponseType.OK))                                                   
-        self.fenetre_ouvrir.set_current_folder(donnees.default_folder)
-        self.fenetre_ouvrir.set_current_name(donnees.default_file)
-        self.fenetre_ouvrir.set_do_overwrite_confirmation(True)
-        if (self.fenetre_ouvrir.run() == Gtk.ResponseType.OK):
-            self.resultat = self.fenetre_ouvrir.get_filename()
+        self.file_dialog = Gtk.FileChooserDialog(_("Save file..."), 
+                                                   None, 
+                                                   Gtk.FileChooserAction.SAVE,
+                                                   (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_SAVE, Gtk.ResponseType.OK))                                                   
+        self.file_dialog.set_current_folder(data.default_folder)
+        self.file_dialog.set_current_name(data.default_file)
+        self.file_dialog.set_do_overwrite_confirmation(True)
+        if (self.file_dialog.run() == Gtk.ResponseType.OK):
+            self.resultat = self.file_dialog.get_filename()
 
-        donnees.default_folder = self.fenetre_ouvrir.get_current_folder()
-        self.fenetre_ouvrir.destroy()
+        data.default_folder = self.file_dialog.get_current_folder()
+        self.file_dialog.destroy()
 
-        
     def get_name(self):
         try:
             return self.resultat
@@ -794,23 +797,23 @@ class Thread_Preview(threading.Thread):
            
         for item in self.liste:
             if item[0]:
-                chemin_miniature=creer_miniature(item[1],(int(self.taille[0]), int(self.taille[1])))
+                chemin_miniature=create_thumbnail(item[1],(int(self.taille[0]), int(self.taille[1])))
                 images_a_align.append(chemin_miniature)
-                images_a_fusionner.append(donnees.previs_dossier + "/test" + format(index, "04d") + ".tif")
+                images_a_fusionner.append(data.preview_folder + "/test" + format(index, "04d") + ".tif")
                 index += 1
         if (len(images_a_fusionner))<=1:
             Gui.messageinthebottle(_("Please add two or more images.\n\n Cannot do anything smart with the one image."))
             return
         if not Gui.checkbutton_a5_align.get_active():
-                images_a_fusionner=images_a_align
-        if os.path.exists(donnees.previs_dossier + "/preview.tif"):
-            shutil.copy(donnees.previs_dossier + "/" + "preview.tif", donnees.previs_dossier + "/" + "preview_.tif")
-        if Gui.checkbutton_a5_align.get_active() and \
-        (len(images_a_align) != len(session_images_bak) \
-        or len(self.options_align) != len(session_options_bak) \
-        or len(list(axz for axz in images_a_align if axz not in session_images_bak)) \
-        or len(list(axz2 for axz2 in self.options_align if axz2 not in session_options_bak))):
-            command=["align_image_stack", "-a", donnees.previs_dossier + "/test"] + self.options_align + images_a_align
+            images_a_fusionner=images_a_align
+        if os.path.exists(data.preview_folder + "/preview.tif"):
+            shutil.copy(data.preview_folder + "/" + "preview.tif", data.preview_folder + "/" + "preview_.tif")
+        if Gui.checkbutton_a5_align.get_active()                                        \
+           and (len(images_a_align) != len(session_images_bak)                          \
+           or len(self.options_align) != len(session_options_bak)                       \
+           or len(list(axz for axz in images_a_align if axz not in session_images_bak)) \
+           or len(list(axz2 for axz2 in self.options_align if axz2 not in session_options_bak))):
+            command=["align_image_stack", "-a", data.preview_folder + "/test"] + self.options_align + images_a_align
             Gui.statusbar.push(15, _(":: Align photos..."))
             preview_process=subprocess.Popen(command, stdout=subprocess.PIPE)
             preview_process.wait()
@@ -820,7 +823,7 @@ class Thread_Preview(threading.Thread):
         Gui.statusbar.push(15, _(":: Fusing photos..."))
         print (self.options)
 
-        command=[Gui.enfuser, "-o", donnees.previs_dossier + "/" + "preview.tif"] + self.options + images_a_fusionner
+        command=[Gui.enfuser, "-o", data.preview_folder + "/" + "preview.tif"] + self.options + images_a_fusionner
         preview_process=subprocess.Popen(command, stdout=subprocess.PIPE)
         preview_process.wait()
         Gui.statusbar.pop(15)
@@ -921,12 +924,12 @@ class AproposFen:
                         
 if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal.SIG_DFL)
-    donnees=Donnees()                                                          #Variables 
+    data=data()                                                          #Variables 
     Gui = Interface()                                                          #Interface
                                                                        
     if (len(sys.argv)>1):                                                      #Init with given files
-        fichiers=sys.argv[1:]
-        Gui.put_files_to_the_list(fichiers)
+        files=sys.argv[1:]
+        Gui.put_files_to_the_list(files)
 #        if len(Gui.liststoreimport)==0:
 #            Gui.messageinthebottle(_("\nCan work only with JPEG or TIFF files."))
 
