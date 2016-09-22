@@ -170,8 +170,8 @@ class Interface:
                 
         #On chope le reste, et ca, ca va servir...
         self.listeimages = self.gui.get_object("listeimages")
-        self.buttonajoutfiles = self.gui.get_object("buttonajoutfiles")
-        self.buttonenleverfichier = self.gui.get_object("buttonenleverfichier")
+        self.buttonaddfile = self.gui.get_object("buttonaddfile")
+        self.buttondelfile = self.gui.get_object("buttondelfile")
         self.statusbar = self.gui.get_object("status1")
         self.statusbar.push(1,(_("CPU Cores: %s") % self.cpus))
 
@@ -342,25 +342,25 @@ class Interface:
             self.entryedit_field.set_text("gimp")
 
         #On relie les signaux (cliques sur boutons, cochage des cases, ...) aux fonctions appropriées
-        dic = { "on_mainwindow_destroy" : self.exit_app,
-                "on_buttonannuler_clicked" : self.exit_app,
-                "on_menufilequit_activate" : self.exit_app,
-                "on_menufileopen_activate" : self.ouverture,
-                "on_buttonaddfiles_clicked" : self.ajout,
-                "on_menufileadd_activate" : self.ajout,
-                "on_buttondelfiles_clicked" : self.ttenlever,
-                "on_menufileenlever_activate" : self.enlever,
-                "on_menufilettenlever_activate" : self.ttenlever,
-                "on_buttonpreview_clicked" : self.preview,
-                "on_menufilesave_activate" : self.fusion,
-                "on_buttonfusion_clicked" : self.fusion,
-                "on_buttoneditw_clicked" : self.sendto,
-                "on_buttonbeforeafter_pressed" : self.baswitch,
+        dic = { "on_mainwindow_destroy"         : self.exit_app,
+                "on_buttoncancel_clicked"       : self.exit_app,
+                "on_menufilequit_activate"      : self.exit_app,
+                "on_menufileopen_activate"      : self.add,
+                "on_buttonaddfile_clicked"      : self.add,
+                "on_menufileadd_activate"       : self.add,
+                "on_buttondelfile_clicked"      : self.delete,
+                "on_menufiledelete_activate"    : self.delete,
+                "on_menufileclear_activate"     : self.clear,
+                "on_buttonpreview_clicked"      : self.preview,
+                "on_menufilesave_activate"      : self.fusion,
+                "on_buttonfusion_clicked"       : self.fusion,
+                "on_buttoneditw_clicked"        : self.sendto,
+                "on_buttonbeforeafter_pressed"  : self.baswitch,
                 "on_buttonbeforeafter_released" : self.baswitch,
-                "on_entry_editor_activate" : self.check_editor,
-                "on_hscaleexp_format_value" : self.apropos,
-                "on_buttonabout_clicked" : self.apropos
-                }                 
+                "on_entry_editor_activate"      : self.check_editor,
+                "on_hscaleexp_format_value"     : self.apropos,
+                "on_buttonabout_clicked"        : self.apropos
+        }
         #Auto-connection des signaux       
         self.gui.connect_signals(dic)
         
@@ -433,31 +433,25 @@ class Interface:
         (filename, ext) = os.path.splitext(file)
         data.default_file = filename+"-fused"+ext
         self.put_files_to_the_list(files)
+        
+    def add(self, widget):
+        FenOuv=OpenFiles_Dialog(self.liststoreimport)
+        self.liststoreimport=FenOuv.get_model()
 
-    def ouverture(self, widget):
-        FenOuv=OpenFiles_Dialog(self.liststoreimport,0)
-        self.liststoreimport=FenOuv.get_model()
-        #self.raffraichissementlisteimages()
-        
-    def ajout(self, widget):
-        FenOuv=OpenFiles_Dialog(self.liststoreimport,1)
-        self.liststoreimport=FenOuv.get_model()
-        #self.raffraichissementlisteimages()
-        
     def raffraichissementlisteimages(self):
-        #self.listeimages.set_model(self.liststoreimport)
         self.treeselectionsuppr=self.listeimages.get_selection()                #pour récupérer quels files sont selectionnés
-        self.treeselectionsuppr.set_mode(Gtk.SELECTION_MULTIPLE)                #Pour pouvoir en selectionner plusieurs
+        self.treeselectionsuppr.set_mode(Gtk.SelectionMode.MULTIPLE)            #Pour pouvoir en selectionner plusieurs
              
-    def enlever(self, widget):
+    def delete(self, widget):
         self.treeselectionsuppr=self.listeimages.get_selection()                #pour récupérer quels files sont selectionnés
-        self.treeselectionsuppr.set_mode(Gtk.SELECTION_MULTIPLE)                #Pour pouvoir en selectionner plusieurs
+        self.treeselectionsuppr.set_mode(Gtk.SelectionMode.MULTIPLE)            #Pour pouvoir en selectionner plusieurs
         (model, pathlist) = self.treeselectionsuppr.get_selected_rows()
         for i in pathlist:
+            print(i)
             treeiter = model.get_iter(i)
             self.liststoreimport.remove(treeiter) 
             
-    def ttenlever(self, widget):
+    def clear(self, widget):
         self.liststoreimport.clear()
             
     def preview(self, widget):
@@ -580,10 +574,10 @@ class Interface:
         if self.messaga.run() == Gtk.ResponseType.OK:
             self.messaga.destroy()
 
-    def get_exif(self, fichier):
+    def get_exif(self, file):
         tags2=''
         try:
-             im = GExiv2.Metadata(fichier)
+             im = GExiv2.Metadata(file)
              tags_keys = im.get_exif_tags()
              if 'Exif.Image.Model' in tags_keys:
                  tags2 = (_("<i>Model:</i>\t\t\t") + im['Exif.Image.Model'] + "\n")
@@ -657,18 +651,18 @@ class Interface:
         self.files=files
         self.tags2=''
         self.badfiles=[]
-        for fichier in self.files:
-            if re.search('\\.jpg$|\\.jpeg$|\\.tiff$|\\.tif$', fichier, flags=re.IGNORECASE):
-                pb = GdkPixbuf.Pixbuf.new_from_file(fichier)
+        for file in self.files:
+            if re.search('\\.jpg$|\\.jpeg$|\\.tiff$|\\.tif$', file, flags=re.IGNORECASE):
+                pb = GdkPixbuf.Pixbuf.new_from_file(file)
                 im = self.pixbuf2Image(pb)
                 self.size=im.size
-                # self.tags2 = Gui.get_exif(fichier)
+                # self.tags2 = Gui.get_exif(file)
                 if not self.tags2:
                     self.tags2=''
-                self.tooltip=("\n" + _("<b>Filename:</b> ") + os.path.basename(fichier) + "\n"+_("<b>Resolution:</b> ") + str(str(self.size[0]) + "x" + str(self.size[1])) + "\n" + self.tags2)
-                self.liststoreimport.append([1, fichier, GdkPixbuf.Pixbuf.new_from_file_at_size(fichier, 128, 128), self.tooltip])
+                self.tooltip=("\n" + _("<b>Filename:</b> ") + os.path.basename(file) + "\n"+_("<b>Resolution:</b> ") + str(str(self.size[0]) + "x" + str(self.size[1])) + "\n" + self.tags2)
+                self.liststoreimport.append([1, file, GdkPixbuf.Pixbuf.new_from_file_at_size(file, 128, 128), self.tooltip])
             else:
-                self.badfiles.append(fichier)
+                self.badfiles.append(file)
         if len(self.badfiles)>0:
             messaga=_("Only JPEG and TIFF files are allowed.\n\nCannot open:\n")
             for itz in self.badfiles:
@@ -682,39 +676,25 @@ class Interface:
     
 class OpenFiles_Dialog:
     """La classe qui ouvre la fenetre de choix de files, et qui retourne le ListStore par la methode get_model"""
-    def __init__(self,model,bitajout):
+    def __init__(self,model):
         """Lance la fenetre de selection et créé la listsore a partir des files selectionnés"""
         self.filtre=Gtk.FileFilter()
         self.filtre.add_mime_type("image/jpeg")
         self.filtre.add_mime_type("image/tiff")
         self.liststoreimport=model #on repart de l'ancien modele
-        if bitajout:
-            self.file_dialog = Gtk.FileChooserDialog(_("Add images..."), 
-                                                        None, 
-                                                        Gtk.FileChooserAction.OPEN,
-                                                        #(Gtk.StockCancel, Gtk.ResponseCancel, Gtk.StockOpen, Gtk.ResponseOK))
-                                                        (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,Gtk.STOCK_OK, Gtk.ResponseType.OK))
-            self.file_dialog.set_select_multiple(True)
-            self.file_dialog.set_current_folder(data.default_folder)
-            self.file_dialog.set_filter(self.filtre)
-            self.file_dialog.use_preview = True
-            self.previewidget = Gtk.Image()
-            self.file_dialog.set_preview_widget(self.previewidget)
-            self.file_dialog.connect("update-preview", self.update_thumb_preview, self.previewidget)
-        else:
-            self.file_dialog = Gtk.FileChooserDialog(_("Open images..."), 
-                                                       None, 
-                                                       Gtk.FileChooserAction.OPEN,
-                                                       #(Gtk.STOCK_CANCEL, Gtk.RESPONSE_CANCEL, Gtk.STOCK_OPEN, Gtk.RESPONSE_OK))
-                                                       (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,Gtk.STOCK_OK, Gtk.ResponseType.OK))
-            self.file_dialog.set_select_multiple(True) 
-            self.file_dialog.set_current_folder(data.default_folder)
-            self.file_dialog.set_filter(self.filtre)
-            self.file_dialog.use_preview = True
-            self.previewidget = Gtk.Image()
-            self.file_dialog.set_preview_widget(self.previewidget)
-            self.file_dialog.connect("update-preview", self.update_thumb_preview, self.previewidget)
-            self.liststoreimport.clear()     #On remet le model a 0 (oublie des anciennes images)
+
+        self.file_dialog = Gtk.FileChooserDialog(_("Add images..."), 
+                                                    None, 
+                                                    Gtk.FileChooserAction.OPEN,
+                                                    #(Gtk.StockCancel, Gtk.ResponseCancel, Gtk.StockOpen, Gtk.ResponseOK))
+                                                    (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,Gtk.STOCK_OK, Gtk.ResponseType.OK))
+        self.file_dialog.set_select_multiple(True)
+        self.file_dialog.set_current_folder(data.default_folder)
+        self.file_dialog.set_filter(self.filtre)
+        self.file_dialog.use_preview = True
+        self.previewidget = Gtk.Image()
+        self.file_dialog.set_preview_widget(self.previewidget)
+        self.file_dialog.connect("update-preview", self.update_thumb_preview, self.previewidget)
                  
         if (self.file_dialog.run() == Gtk.ResponseType.OK):
             self.files = self.file_dialog.get_filenames()

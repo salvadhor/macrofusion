@@ -233,7 +233,7 @@
                             <property name="orientation">vertical</property>
                             <property name="layout_style">start</property>
                             <child>
-                              <object class="GtkButton" id="buttonaddfiles">
+                              <object class="GtkButton" id="buttonaddfile">
                                 <property name="label">gtk-add</property>
                                 <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
@@ -242,7 +242,7 @@
                                 <property name="border_width">4</property>
                                 <property name="use_stock">True</property>
                                 <property name="image_position">top</property>
-                                <signal name="clicked" handler="on_buttonaddfiles_clicked" swapped="no"/>
+                                <signal name="clicked" handler="on_buttonaddfile_clicked" swapped="no"/>
                                 <accelerator key="a" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                               </object>
                               <packing>
@@ -252,7 +252,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkButton" id="buttondelfiles">
+                              <object class="GtkButton" id="buttondelfile">
                                 <property name="label">gtk-remove</property>
                                 <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
@@ -261,7 +261,7 @@
                                 <property name="border_width">4</property>
                                 <property name="use_stock">True</property>
                                 <property name="image_position">top</property>
-                                <signal name="clicked" handler="on_buttondelfiles_clicked" swapped="no"/>
+                                <signal name="clicked" handler="on_buttondelfile_clicked" swapped="no"/>
                                 <accelerator key="w" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                               </object>
                               <packing>
@@ -2344,14 +2344,14 @@ Enter name of graphics editor to edit images
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkButton" id="buttonannuler">
+                              <object class="GtkButton" id="buttoncancel">
                                 <property name="label">gtk-quit</property>
                                 <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
                                 <property name="use_stock">True</property>
-                                <signal name="clicked" handler="on_buttonannuler_clicked" swapped="no"/>
+                                <signal name="clicked" handler="on_buttoncancel_clicked" swapped="no"/>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
