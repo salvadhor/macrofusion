@@ -236,6 +236,7 @@ class Interface:
         self.progressbar = self.gui.get_object("progressbar")
         
         self.checkbuttonexif = self.gui.get_object("checkbuttonexif")
+        self.checkbuttonalignfiles = self.gui.get_object("checkbuttonalignfiles")
 
         #valeurs des options et configurations :
         self.check_pyramidelevel = self.gui.get_object("check_pyramidelevel")
@@ -293,6 +294,7 @@ class Interface:
             self.checkbutton_a5_crop.set_sensitive(False)
             self.checkbutton_a5_field.set_sensitive(False)
             self.checkbutton_a5_shift.set_sensitive(False)
+            self.checkbuttonalignfiles.set_sensitive(False)
             #self.checkbutton_a5_align.set_sensitive(False)
             self.messageinthebottle(_("Hugin tools (align_image_stack) are missing !\n\n Cannot auto align images."))            
             
@@ -330,6 +332,8 @@ class Interface:
             self.combtiff.set_active(self.conf.getint('prefs', 'tiffcomp'))
         if self.conf.has_option('prefs', 'exif'):  
             self.checkbuttonexif.set_active(self.conf.getboolean('prefs', 'exif'))
+        if self.conf.has_option('prefs', 'alignfiles'):
+            self.checkbuttonalignfiles.set_active(self.conf.getboolean('prefs', 'alignfiles'))
         if self.conf.has_option('prefs', 'default_folder'):  
             data.default_folder = self.conf.get('prefs', 'default_folder')
             if not os.path.isdir(data.default_folder):
@@ -608,7 +612,7 @@ class Interface:
             return -1
         command_align = ['align_image_stack', '--gpu', '-a', data.preview_folder + '/' + data.align_prefix] + self.get_options_align() + self.liste_images
         command_fuse = [Gui.enfuser, "-o", self.name] + self.get_options() + self.liste_aligned
-        ProFus = Progress_Fusion(command_fuse, command_align, self.liste_aligned, self.issend)
+        ProFus = Progress_Fusion(command_fuse, command_align, self.liste_images, self.liste_aligned, self.issend)
         
     def apropos(self, widget):
         self.fen=AproposFen()
@@ -632,6 +636,7 @@ class Interface:
         conf.set('prefs', 'jpegcompr', str(int(self.hscalecomprjpeg.get_value())))
         conf.set('prefs', 'tiffcomp', str(self.combtiff.get_active()))
         conf.set('prefs', 'exif', str(self.checkbuttonexif.get_active()))
+        conf.set('prefs', 'alignfiles', str(self.checkbuttonalignfiles.get_active()))
         conf.set('prefs', 'editor',  str(self.entryedit_field.get_text()))
         conf.set('prefs', 'default_folder', data.default_folder)
         conf.write(open(data.config_folder+ '/mfusion.cfg', 'w'))
@@ -807,7 +812,7 @@ class Thread_Preview(threading.Thread):
 #######################################################################
         
 class Progress_Fusion:
-    def __init__(self, command_fuse, command_align, liste_aligned, issend):
+    def __init__(self, command_fuse, command_align, liste, liste_aligned, issend):
         
         #self.progress = Gtk.glade.XML(fname=UI + "progress.xml", domain=APP)
         self.progress = Gtk.Builder()
@@ -822,7 +827,7 @@ class Progress_Fusion:
         self.progress.connect_signals(self.dic1)        
         self.info_label.set_text(_('Fusion images...'))
        
-        self.thread_fusion = Thread_Fusion(command_fuse, command_align, liste_aligned, issend)  #On prepare le thread qui va faire tout le boulot
+        self.thread_fusion = Thread_Fusion(command_fuse, command_align, liste, liste_aligned, issend)  #On prepare le thread qui va faire tout le boulot
         self.thread_fusion.start()                                     #On le lance
         timer = GObject.timeout_add (100, self.pulsate)
         
@@ -847,17 +852,37 @@ class Progress_Fusion:
 ##############################################################################
 
 class Thread_Fusion(threading.Thread):
-    def __init__(self, command_fuse, command_align, liste_aligned, issend):
+    def __init__(self, command_fuse, command_align, liste, liste_aligned, issend):
         threading.Thread.__init__ (self)
         self.command_fuse = command_fuse
         self.command_align = command_align
         self.issend = issend
+        self.liste = liste
         self.liste_aligned = liste_aligned
         
     def run(self):
         if Gui.checkbutton_a5_align.get_active():            
             align_process=subprocess.Popen(self.command_align, stdout=subprocess.PIPE)
             align_process.wait()
+        
+        if Gui.checkbuttonalignfiles.get_active():
+            # copy aligned files in working folder for further processing by user:
+            count = 0
+            for file in self.liste:
+                tmp_filename    = self.liste_aligned[count] #data.align_prefix+str(count).zfill(4)+".tif"
+                (path, file_)   = os.path.split(file)
+                (filename, ext) = os.path.splitext(file_)
+                new_filename    = data.preview_folder + "/" + filename + "_" + data.align_prefix + ".tif"
+                shutil.copy(tmp_filename, new_filename)
+                # if user wants to export a fused JPG we also give him aligned JPGs
+                if Gui.name.endswith(('.jpg', '.jpeg', '.JPG', '.JPEG')):
+                    command = ["mogrify", "-format", "jpg", "-quality", "100", new_filename ]
+                    output  = subprocess.Popen(command).communicate()[0]
+                    new_filename = os.path.splitext(new_filename)[0] + ".jpg"
+                    print(command)
+                
+                shutil.move(new_filename, path)
+                count+=1
             
         fusion_process=subprocess.Popen(self.command_fuse, stdout=subprocess.PIPE)
         fusion_process.wait()
