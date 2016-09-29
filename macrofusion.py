@@ -571,7 +571,7 @@ class Interface:
             return
         
     def messageinthebottle(self, message):
-        self.messaga=Gtk.MessageDialog(parent=None, flags=0, type=Gtk.MessageType.INFO, buttons=Gtk.ButtonsType.OK, message_format=(message))
+        self.messaga = Gtk.MessageDialog(parent=self.win, flags=Gtk.DialogFlags.MODAL, type=Gtk.MessageType.INFO, buttons=Gtk.ButtonsType.OK, message_format=(message))
         if self.messaga.run() == Gtk.ResponseType.OK:
             self.messaga.destroy()
 
