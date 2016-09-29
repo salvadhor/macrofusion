@@ -731,6 +731,7 @@ Auto align images.
 </property>
                                             <property name="xalign">0.5</property>
                                             <property name="draw_indicator">True</property>
+                                            <signal name="toggled" handler="on_checkbutton_a5_align_toggled" swapped="no"/>
                                           </object>
                                           <packing>
                                             <property name="expand">True</property>
@@ -863,6 +864,7 @@ Useful for aligning focus stacks with slightly different magnification.
 number of blending LEVELS to use
 					    </property>
                                             <property name="xalign">0.5</property>
+                                            <property name="active">True</property>
                                             <property name="draw_indicator">True</property>
                                           </object>
                                           <packing>

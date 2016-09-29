@@ -291,12 +291,12 @@ class Interface:
             self.messageinthebottle(_("Exiftool is missing!\n\n Cannot copy exif info."))
         if not data.check_install('align_image_stack'):
             self.checkbutton_a5_align.set_sensitive(False)
-            self.checkbutton_a5_crop.set_sensitive(False)
-            self.checkbutton_a5_field.set_sensitive(False)
-            self.checkbutton_a5_shift.set_sensitive(False)
-            self.checkbuttonalignfiles.set_sensitive(False)
-            #self.checkbutton_a5_align.set_sensitive(False)
             self.messageinthebottle(_("Hugin tools (align_image_stack) are missing !\n\n Cannot auto align images."))            
+
+        self.checkbutton_a5_crop.set_sensitive(False)
+        self.checkbutton_a5_field.set_sensitive(False)
+        self.checkbutton_a5_shift.set_sensitive(False)
+        self.checkbuttonalignfiles.set_sensitive(False)          
             
         # Read values from config
         self.conf = configparser.ConfigParser()
@@ -346,31 +346,44 @@ class Interface:
             self.entryedit_field.set_text("gimp")
 
         #On relie les signaux (cliques sur boutons, cochage des cases, ...) aux fonctions appropriées
-        dic = { "on_mainwindow_destroy"         : self.exit_app,
-                "on_buttoncancel_clicked"       : self.exit_app,
-                "on_menufilequit_activate"      : self.exit_app,
-                "on_menufileopen_activate"      : self.add,
-                "on_buttonaddfile_clicked"      : self.add,
-                "on_menufileadd_activate"       : self.add,
-                "on_buttondelfile_clicked"      : self.delete,
-                "on_menufiledelete_activate"    : self.delete,
-                "on_menufileclear_activate"     : self.clear,
-                "on_buttonpreview_clicked"      : self.preview,
-                "on_menufilesave_activate"      : self.fusion,
-                "on_buttonfusion_clicked"       : self.fusion,
-                "on_buttoneditw_clicked"        : self.sendto,
-                "on_buttonbeforeafter_pressed"  : self.baswitch,
-                "on_buttonbeforeafter_released" : self.baswitch,
-                "on_entry_editor_activate"      : self.check_editor,
-                "on_hscaleexp_format_value"     : self.apropos,
-                "on_buttonabout_clicked"        : self.apropos
+        dic = { "on_mainwindow_destroy"             : self.exit_app,
+                "on_buttoncancel_clicked"           : self.exit_app,
+                "on_menufilequit_activate"          : self.exit_app,
+                "on_menufileopen_activate"          : self.add,
+                "on_buttonaddfile_clicked"          : self.add,
+                "on_menufileadd_activate"           : self.add,
+                "on_buttondelfile_clicked"          : self.delete,
+                "on_menufiledelete_activate"        : self.delete,
+                "on_menufileclear_activate"         : self.clear,
+                "on_buttonpreview_clicked"          : self.preview,
+                "on_menufilesave_activate"          : self.fusion,
+                "on_buttonfusion_clicked"           : self.fusion,
+                "on_buttoneditw_clicked"            : self.sendto,
+                "on_buttonbeforeafter_pressed"      : self.baswitch,
+                "on_buttonbeforeafter_released"     : self.baswitch,
+                "on_entry_editor_activate"          : self.check_editor,
+                "on_hscaleexp_format_value"         : self.apropos,
+                "on_buttonabout_clicked"            : self.apropos,
+                "on_checkbutton_a5_align_toggled"   : self.activate_align_options
         }
         #Auto-connection des signaux       
         self.gui.connect_signals(dic)
         
         #initialisation de la liste d'images a fusionner
         self.inittreeview()
-      
+
+    def activate_align_options(self, action):
+        if self.checkbutton_a5_align.get_active():
+            self.checkbutton_a5_crop.set_sensitive(True)
+            self.checkbutton_a5_field.set_sensitive(True)
+            self.checkbutton_a5_shift.set_sensitive(True)
+            self.checkbuttonalignfiles.set_sensitive(True)
+        else:
+            self.checkbutton_a5_crop.set_sensitive(False)
+            self.checkbutton_a5_field.set_sensitive(False)
+            self.checkbutton_a5_shift.set_sensitive(False)
+            self.checkbuttonalignfiles.set_sensitive(False)
+
     def exit_app(self, action):
         # cancel = self.autosave_image()
         # if cancel:
