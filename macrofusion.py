@@ -468,7 +468,7 @@ class Interface:
                         timer = GObject.timeout_add (100, self.pulsate)
                         break
         if item<=1:
-            self.messageinthebottle(_("Please add or activate at least two images.\n\n Cannot do anything smart with the one or no image."))
+            self.messageinthebottle(_("Please add or activate at least two images.\n\n Cannot do anything smart with one or no image."))
 
 
     def get_options_align(self):
@@ -561,7 +561,9 @@ class Interface:
     
     def sendto(self, widget):
         self.name=(data.preview_folder + "/sendto.tif")
-        
+        if not os.path.exists(self.name):
+            self.messageinthebottle(_("Please add or activate at least two images.\n\n Cannot do anything smart with one or no image."))
+            return
         if not self.check_editor(0):
             return
         if self.start(self.name) == -1:
