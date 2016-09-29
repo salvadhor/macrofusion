@@ -99,7 +99,6 @@ def create_thumbnail(chemin,taille):
 ####################################################
 ########Classe des données##########################
 ####################################################
-
 class data:
     """Données utiles"""
     def __init__(self):
@@ -109,6 +108,7 @@ class data:
         self.default_folder = os.path.expanduser('~/')
         self.temp_folder = tempfile.gettempdir()
         self.default_file = ""
+        self.align_prefix = "aligned"
         self.update_folders()
 
     def update_folders(self):        
@@ -385,7 +385,6 @@ class Interface:
         return True
         
     def cleanup(self):
-        # os.remove(data.enfuse_folder + "/session.sav")
         for self.files in os.walk(data.preview_folder):
             for self.filename in self.files[2]:
                 os.remove(data.preview_folder + "/" + self.filename)
@@ -438,10 +437,6 @@ class Interface:
         FenOuv=OpenFiles_Dialog(self.liststoreimport)
         self.liststoreimport=FenOuv.get_model()
 
-    def raffraichissementlisteimages(self):
-        self.treeselectionsuppr=self.listeimages.get_selection()                #pour récupérer quels files sont selectionnés
-        self.treeselectionsuppr.set_mode(Gtk.SelectionMode.MULTIPLE)            #Pour pouvoir en selectionner plusieurs
-             
     def delete(self, widget):
         self.treeselectionsuppr=self.listeimages.get_selection()                #pour récupérer quels files sont selectionnés
         self.treeselectionsuppr.set_mode(Gtk.SelectionMode.MULTIPLE)            #Pour pouvoir en selectionner plusieurs
@@ -473,7 +468,7 @@ class Interface:
 
 
     def get_options_align(self):
-        self.options_align=[]
+        self.options_align = ['--gpu']
         if self.checkbutton_a5_align.get_active():
             if self.checkbutton_a5_crop.get_active():
                 self.options_align.append('-C')
@@ -558,14 +553,14 @@ class Interface:
         if self.name:
             if not re.search('\\.jpeg$|\\.jpg$|\\.tiff$|\\.tif$', self.name, flags=re.IGNORECASE):
                 self.name+=".jpg"
-            self.enroute('')
+            self.start('')
     
     def sendto(self, widget):
         self.name=(data.preview_folder + "/sendto.tif")
         
         if not self.check_editor(0):
             return
-        if self.enroute(self.name) == -1:
+        if self.start(self.name) == -1:
             self.messageinthebottle(_("No preview, no output, no edit.\n\n Game Over."))
             return
         
@@ -593,7 +588,7 @@ class Interface:
             print ("failed to identify", file)
         return tags2
                
-    def enroute(self, issend):        
+    def start(self, issend):        
         self.issend=issend
         self.liste_images=[]
         self.liste_aligned=[]
@@ -601,7 +596,7 @@ class Interface:
         for item in self.liststoreimport:
             if item[0]:
                self.liste_images.append(item[1])
-               self.liste_aligned.append(data.preview_folder + "/out" + format(index, "04d") + ".tif")
+               self.liste_aligned.append(data.preview_folder + "/" + data.align_prefix + format(index, "04d") + ".tif")
                index += 1
         if not Gui.checkbutton_a5_align.get_active():
             self.liste_aligned=self.liste_images
@@ -611,10 +606,9 @@ class Interface:
         if len(self.liste_images) <= 1:
             self.messageinthebottle(_("Please add or activate at least two images.\n\n Cannot do anything smart with the one or no image."))
             return -1
-        command_a=['align_image_stack', '-a', data.preview_folder + '/out'] + self.get_options_align() + self.liste_images
-        command=[Gui.enfuser, "-o", self.name] + self.get_options() + self.liste_aligned
-        ProFus=Progress_Fusion(command, command_a, self.liste_aligned, self.issend)
-        
+        command_align = ['align_image_stack', '--gpu', '-a', data.preview_folder + '/' + data.align_prefix] + self.get_options_align() + self.liste_images
+        command_fuse = [Gui.enfuser, "-o", self.name] + self.get_options() + self.liste_aligned
+        ProFus = Progress_Fusion(command_fuse, command_align, self.liste_aligned, self.issend)
         
     def apropos(self, widget):
         self.fen=AproposFen()
@@ -664,10 +658,10 @@ class Interface:
             else:
                 self.badfiles.append(file)
         if len(self.badfiles)>0:
-            messaga=_("Only JPEG and TIFF files are allowed.\n\nCannot open:\n")
+            message=_("Only JPEG and TIFF files are allowed.\n\nCannot open:\n")
             for itz in self.badfiles:
-                messaga+=itz + "\n"
-            Gui.messageinthebottle(messaga)
+                message+=itz + "\n"
+            Gui.messageinthebottle(message)
         return 
         
 ####################################################################
@@ -678,19 +672,18 @@ class OpenFiles_Dialog:
     """La classe qui ouvre la fenetre de choix de files, et qui retourne le ListStore par la methode get_model"""
     def __init__(self,model):
         """Lance la fenetre de selection et créé la listsore a partir des files selectionnés"""
-        self.filtre=Gtk.FileFilter()
-        self.filtre.add_mime_type("image/jpeg")
-        self.filtre.add_mime_type("image/tiff")
+        self.filter=Gtk.FileFilter()
+        self.filter.add_mime_type("image/jpeg")
+        self.filter.add_mime_type("image/tiff")
         self.liststoreimport=model #on repart de l'ancien modele
 
         self.file_dialog = Gtk.FileChooserDialog(_("Add images..."), 
                                                     None, 
                                                     Gtk.FileChooserAction.OPEN,
-                                                    #(Gtk.StockCancel, Gtk.ResponseCancel, Gtk.StockOpen, Gtk.ResponseOK))
                                                     (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,Gtk.STOCK_OK, Gtk.ResponseType.OK))
         self.file_dialog.set_select_multiple(True)
         self.file_dialog.set_current_folder(data.default_folder)
-        self.file_dialog.set_filter(self.filtre)
+        self.file_dialog.set_filter(self.filter)
         self.file_dialog.use_preview = True
         self.previewidget = Gtk.Image()
         self.file_dialog.set_preview_widget(self.previewidget)
@@ -740,7 +733,7 @@ class SaveFiles_Dialog:
         self.file_dialog = Gtk.FileChooserDialog(_("Save file..."), 
                                                    None, 
                                                    Gtk.FileChooserAction.SAVE,
-                                                   (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_SAVE, Gtk.ResponseType.OK))                                                   
+                                                   (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_SAVE, Gtk.ResponseType.OK))
         self.file_dialog.set_current_folder(data.default_folder)
         self.file_dialog.set_current_name(data.default_file)
         self.file_dialog.set_do_overwrite_confirmation(True)
@@ -814,7 +807,7 @@ class Thread_Preview(threading.Thread):
 #######################################################################
         
 class Progress_Fusion:
-    def __init__(self, command, command_a, liste_aligned, issend):
+    def __init__(self, command_fuse, command_align, liste_aligned, issend):
         
         #self.progress = Gtk.glade.XML(fname=UI + "progress.xml", domain=APP)
         self.progress = Gtk.Builder()
@@ -824,12 +817,12 @@ class Progress_Fusion:
         self.info_label = self.progress.get_object("info_label")
         self.progress_bar = self.progress.get_object("progressbar1")
         self.progress_stop_button = self.progress.get_object("stop_button")
-        self.dic1 = {"on_stop_button_clicked" : self.close_progress, 
-                     "on_dialog1_destroy" : self.close_progress}
+        self.dic1 = { "on_stop_button_clicked"  : self.close_progress, 
+                      "on_dialog1_destroy"      : self.close_progress }
         self.progress.connect_signals(self.dic1)        
         self.info_label.set_text(_('Fusion images...'))
        
-        self.thread_fusion = Thread_Fusion(command, command_a, liste_aligned, issend)                    #On prepare le thread qui va faire tout le boulot
+        self.thread_fusion = Thread_Fusion(command_fuse, command_align, liste_aligned, issend)  #On prepare le thread qui va faire tout le boulot
         self.thread_fusion.start()                                     #On le lance
         timer = GObject.timeout_add (100, self.pulsate)
         
@@ -854,25 +847,27 @@ class Progress_Fusion:
 ##############################################################################
 
 class Thread_Fusion(threading.Thread):
-    def __init__(self, command, command_a, liste_aligned, issend):
+    def __init__(self, command_fuse, command_align, liste_aligned, issend):
         threading.Thread.__init__ (self)
-        self.command=command
-        self.command_a=command_a
-        self.issend=issend
-        self.liste_aligned=liste_aligned
+        self.command_fuse = command_fuse
+        self.command_align = command_align
+        self.issend = issend
+        self.liste_aligned = liste_aligned
         
     def run(self):
         if Gui.checkbutton_a5_align.get_active():            
-            align_process=subprocess.Popen(self.command_a, stdout=subprocess.PIPE)
+            align_process=subprocess.Popen(self.command_align, stdout=subprocess.PIPE)
             align_process.wait()
-        fusion_process=subprocess.Popen(self.command, stdout=subprocess.PIPE)
+            
+        fusion_process=subprocess.Popen(self.command_fuse, stdout=subprocess.PIPE)
         fusion_process.wait()
-        # fusion_process=subprocess.call(self.command)
+        
         if Gui.checkbuttonexif.get_active():
             exif_copy = subprocess.Popen(["exiftool", "-tagsFromFile", Gui.liste_images[0], "-overwrite_original", Gui.name])
             exif_copy.wait()
         if len(self.issend) > 0:
             subprocess.Popen([Gui.entryedit_field.get_text(), self.issend], stdout=subprocess.PIPE)
+
 
 ########################################    
 #### Classe de la fenêtre a propos  ####
@@ -904,13 +899,13 @@ class AproposFen:
                         
 if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal.SIG_DFL)
-    data=data()                                                          #Variables 
-    Gui = Interface()                                                          #Interface
+    data = data()                                              
+    Gui  = Interface()
                                                                        
-    if (len(sys.argv)>1):                                                      #Init with given files
+    if (len(sys.argv)>1):     
         files=sys.argv[1:]
         Gui.put_files_to_the_list(files)
 #        if len(Gui.liststoreimport)==0:
 #            Gui.messageinthebottle(_("\nCan work only with JPEG or TIFF files."))
 
-    Gtk.main()                                                                 #The rest
+    Gtk.main()
