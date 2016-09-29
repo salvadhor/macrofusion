@@ -799,8 +799,6 @@ class Thread_Preview(threading.Thread):
             return
         if not Gui.checkbutton_a5_align.get_active():
             images_a_fusionner=images_a_align
-        if os.path.exists(data.preview_folder + "/preview.tif"):
-            shutil.copy(data.preview_folder + "/" + "preview.tif", data.preview_folder + "/" + "preview_.tif")
         if Gui.checkbutton_a5_align.get_active()                                        \
            and (len(images_a_align) != len(session_images_bak)                          \
            or len(self.options_align) != len(session_options_bak)                       \
