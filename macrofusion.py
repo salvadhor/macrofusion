@@ -451,7 +451,7 @@ class Interface:
         self.put_files_to_the_list(files)
         
     def add(self, widget):
-        FenOuv=OpenFiles_Dialog(self.liststoreimport)
+        FenOuv=OpenFiles_Dialog(self.liststoreimport, self.win)
         self.liststoreimport=FenOuv.get_model()
 
     def delete(self, widget):
@@ -565,7 +565,10 @@ class Interface:
             self.imagepreview.set_from_file(data.preview_folder + "/preview.tif")
         
     def fusion(self,widget):
-        FenPar=SaveFiles_Dialog()
+        if len(self.liststoreimport) <= 1:
+            self.messageinthebottle(_("Please add or activate at least two images.\n\n Cannot do anything smart with the one or no image."))
+            return
+        FenPar=SaveFiles_Dialog(self.win)
         self.name = FenPar.get_name()
         if self.name:
             if not re.search('\\.jpeg$|\\.jpg$|\\.tiff$|\\.tif$', self.name, flags=re.IGNORECASE):
@@ -575,7 +578,7 @@ class Interface:
     def sendto(self, widget):
         self.name=(data.preview_folder + "/sendto.tif")
         if not os.path.exists(self.name):
-            self.messageinthebottle(_("Please add or activate at least two images.\n\n Cannot do anything smart with one or no image."))
+            self.messageinthebottle(_("Please add or activate at least two images.\n\n Cannot do anything smart with the one or no image."))
             return
         if not self.check_editor(0):
             return
@@ -630,7 +633,7 @@ class Interface:
         ProFus = Progress_Fusion(command_fuse, command_align, self.liste_images, self.liste_aligned, self.issend)
         
     def apropos(self, widget):
-        self.fen=AproposFen()
+        self.fen=AproposFen(self.win)
         
     def save_settings(self):
         conf = configparser.ConfigParser()
@@ -690,7 +693,7 @@ class Interface:
     
 class OpenFiles_Dialog:
     """La classe qui ouvre la fenetre de choix de files, et qui retourne le ListStore par la methode get_model"""
-    def __init__(self,model):
+    def __init__(self, model, parent):
         """Lance la fenetre de selection et créé la listsore a partir des files selectionnés"""
         self.filter=Gtk.FileFilter()
         self.filter.add_mime_type("image/jpeg")
@@ -698,7 +701,7 @@ class OpenFiles_Dialog:
         self.liststoreimport=model #on repart de l'ancien modele
 
         self.file_dialog = Gtk.FileChooserDialog(_("Add images..."), 
-                                                    None, 
+                                                    parent, 
                                                     Gtk.FileChooserAction.OPEN,
                                                     (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,Gtk.STOCK_OK, Gtk.ResponseType.OK))
         self.file_dialog.set_select_multiple(True)
@@ -748,10 +751,10 @@ class OpenFiles_Dialog:
 
 class SaveFiles_Dialog:
     """La classe qui ouvre la fenetre de choix pour enregistrer le fichier"""          
-    def __init__(self):
+    def __init__(self, parent):
         
         self.file_dialog = Gtk.FileChooserDialog(_("Save file..."), 
-                                                   None, 
+                                                   parent, 
                                                    Gtk.FileChooserAction.SAVE,
                                                    (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_SAVE, Gtk.ResponseType.OK))
         self.file_dialog.set_current_folder(data.default_folder)
@@ -912,8 +915,8 @@ class Thread_Fusion(threading.Thread):
 ########################################  
 
 class AproposFen:
-    def __init__(self):
-        self.aboutdialog = Gtk.AboutDialog()
+    def __init__(self, parent):
+        self.aboutdialog = Gtk.AboutDialog("About", parent)
         self.aboutdialog.set_name("MacroFusion")
         self.aboutdialog.set_modal(True)
         self.aboutdialog.set_position(Gtk.WindowPosition.CENTER)
