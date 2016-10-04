@@ -881,24 +881,29 @@ class Thread_Fusion(threading.Thread):
             align_process=subprocess.Popen(self.command_align, stdout=subprocess.PIPE)
             align_process.wait()
         
-        if Gui.checkbuttonalignfiles.get_active():
-            # copy aligned files in working folder for further processing by user:
-            count = 0
-            for file in self.liste:
-                tmp_filename    = self.liste_aligned[count] #data.align_prefix+str(count).zfill(4)+".tif"
-                (path, file_)   = os.path.split(file)
-                (filename, ext) = os.path.splitext(file_)
-                new_filename    = data.preview_folder + "/" + filename + "_" + data.align_prefix + ".tif"
-                shutil.copy(tmp_filename, new_filename)
-                # if user wants to export a fused JPG we also give him aligned JPGs
-                if Gui.name.endswith(('.jpg', '.jpeg', '.JPG', '.JPEG')):
-                    command = ["mogrify", "-format", "jpg", "-quality", "100", new_filename ]
-                    output  = subprocess.Popen(command).communicate()[0]
-                    new_filename = os.path.splitext(new_filename)[0] + ".jpg"
-                    print(command)
-                
-                shutil.move(new_filename, path)
-                count+=1
+            if Gui.checkbuttonalignfiles.get_active():
+                # copy aligned files in working folder for further processing by user:
+                count = 0
+                for file in self.liste:
+                    tmp_filename    = self.liste_aligned[count] #data.align_prefix+str(count).zfill(4)+".tif"
+                    (path, file_)   = os.path.split(file)
+                    (filename, ext) = os.path.splitext(file_)
+                    new_filename    = data.preview_folder + "/" + filename + "_" + data.align_prefix + ".tif"
+                    new_filename_dst = path + "/" + filename + "_" + data.align_prefix + ".tif"
+                    if os.path.exists(new_filename):
+                        os.remove(new_filename)
+                    shutil.copy(tmp_filename, new_filename)
+                    # if user wants to export a fused JPG we also give him aligned JPGs
+                    if Gui.name.endswith(('.jpg', '.jpeg', '.JPG', '.JPEG')):
+                        command = ["mogrify", "-format", "jpg", "-quality", "100", new_filename ]
+                        output  = subprocess.Popen(command).communicate()[0]
+                        new_filename = os.path.splitext(new_filename)[0] + ".jpg"
+                        print(command)
+
+                    if os.path.exists(new_filename_dst):
+                        os.remove(new_filename_dst)
+                    shutil.move(new_filename, new_filename_dst)
+                    count+=1
             
         fusion_process=subprocess.Popen(self.command_fuse, stdout=subprocess.PIPE)
         fusion_process.wait()
