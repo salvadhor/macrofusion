@@ -265,12 +265,31 @@
                                 <property name="use_stock">True</property>
                                 <property name="image_position">top</property>
                                 <signal name="clicked" handler="on_buttondelfile_clicked" swapped="no"/>
-                                <accelerator key="w" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                                <accelerator key="r" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
                                 <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="buttonclear">
+                                <property name="label">gtk-clear</property>
+                                <property name="use_action_appearance">False</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="receives_default">True</property>
+                                <property name="border_width">4</property>
+                                <property name="use_stock">True</property>
+                                <property name="image_position">top</property>
+                                <signal name="clicked" handler="on_buttonclear_clicked" swapped="no"/>
+                                <accelerator key="c" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">2</property>
                               </packing>
                             </child>
                           </object>

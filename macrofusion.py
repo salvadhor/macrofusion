@@ -475,6 +475,7 @@ class Interface:
                 "on_menufileadd_activate"           : self.add,
                 "on_buttondelfile_clicked"          : self.delete,
                 "on_menufiledelete_activate"        : self.delete,
+                "on_buttonclear_clicked"            : self.clear,
                 "on_menufileclear_activate"         : self.clear,
                 "on_buttonpreview_clicked"          : self.preview,
                 "on_menufilesave_activate"          : self.fusion,
@@ -838,6 +839,7 @@ class OpenFiles_Dialog:
             self.files = self.file_dialog.get_filenames()
             self.tags2 = ''
             self.badfiles = []
+            # TODO: check if resolution of files match!
             (path, file) = os.path.split(self.files[0])
             (filename, ext) = os.path.splitext(file)
             settings["default_file"] = filename+"-fused"+ext
