@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
-
 # License : GPLv3 : http://gplv3.fsf.org/
+
+APP = 'MacroFusion'
+__VERSION__='0.7.5'
+__LICENSE__='GPL'
+__COPYRIGHT__='Dariusz Duma'
+__WEBSITE__='http://sourceforge.net/p/macrofusion'
 
 try:
 
@@ -21,6 +25,8 @@ try:
     import urllib.parse
     import signal
     import tempfile
+    import locale
+
 
     from gi import require_version
     require_version('Gtk', '3.0')
@@ -37,17 +43,12 @@ try:
 except:
     print('Python Imaging Library is missing.')
 
+
 # Bad, bad, really bad coder... Global variables...
 global session_images_bak
 session_images_bak=[]
 global session_options_bak
 session_options_bak=[]
-
-APP = 'MacroFusion'
-__VERSION__='0.7.5'
-__LICENSE__='GPL'
-__COPYRIGHT__='Dariusz Duma'
-__WEBSITE__='http://sourceforge.net/p/macrofusion'
 
 if os.path.exists('/usr/share/mfusion/ui/ui.xml') \
     and os.path.exists('/usr/share/mfusion/ui/progress.xml') \
@@ -67,11 +68,12 @@ elif os.path.exists(sys.path[0] + "/ui/ui.xml"):
 else:
     print ("That's me, your MacroFusion. Make your mind - local or system wide install?")
     sys.exit(1)
-    
-import locale
+
+
 from locale import gettext as _
 locale.bindtextdomain(APP, DIR)
 locale.textdomain(APP)
+
 
 GObject.threads_init()
 
@@ -82,7 +84,7 @@ def toggled_cb(cell, path, user_data):
 
 # PLEASE REAPAIR!! Python-imaging can't open .tiff (or some of them)    
 def create_thumbnail(chemin,taille):
-    outfile=data.preview_folder + '/' + os.path.split(chemin)[1]
+    outfile=settings["preview_folder"] + '/' + os.path.split(chemin)[1]
     try:
         im = GdkPixbuf.Pixbuf.new_from_file_at_size(chemin, taille[0], taille[1])
 #        pb = Gtk.gdk.pixbuf_new_from_file(chemin)
@@ -99,38 +101,149 @@ def create_thumbnail(chemin,taille):
 ####################################################
 ########Classe des données##########################
 ####################################################
+enfuse_gray_projector_options = ["anti-value", "average", "l-star", "lightness", "value", "luminance", "pl-star"]
+tiff_compression = {0:"NONE", 1:"PACKBITS", 2:"LZW", 3:"DEFLATE"}
+settings = {
+    "install_folder"            : sys.path[0],
+    "config_folder"             : os.getenv('XDG_CONFIG_HOME') or os.path.expanduser('~/.config/mfusion'),
+    "default_folder"            : os.path.expanduser('~/'),
+    "temp_folder"               : tempfile.gettempdir(),
+    "align_prefix"              : "aligned",
+    "default_file"              : "",
+    "files"                     : [ ],
+    "enfuser"                   : "enfuse",
+    "cpus"                      : 1,
+    "align_settings"            :
+    {
+        # Auto crop the image to the area covered by all images.
+        "auto_crop"             : ["-C",        True],
+        # Optimize image center shift for all images, except for first.
+        "opt_img_shift"         : ["-i",        True],
+        # Optimize field of view for all images, except for first.
+        # Useful for aligning focus stacks with slightly different magnification.
+        "opt_fov"               : ["-m",        True],
+        # Use GPU for remapping.
+        "use_gpu"               : ["--gpu",     True],
+        # Correlation threshold for identifying control points (default: 0.9).
+        "corr_thres"            : ["--corr",    0.6],
+        # Number of control points (per grid, see option -g) to create between adjacent images (default: 8).  
+        "num_ctrl_pnt"          : ["-c",        20],
+        # Scale down image by 2^scale (default: 1). Scaling down images will improve speed at the cost of accuracy.
+        "scale_down"            : ["-s",        0],
+        # Misc arguments
+        "misc_args"             : ["",          False]
+    },
+    "fuse_settings"             :
+    {
+        # default compression setting (for JPG/TIFF) 
+        "compression"           : ["--compression",             "100"],
+        # weight given to well-exposed pixels
+        "exposure-weight"       : ["--exposure-weight",         1.0],
+        # weight given to highly-saturated pixels
+        "saturation-weight"     : ["--saturation-weight",       0.2],
+        # weight given to pixels in high-contrast neighborhoods
+        "contrast-weight"       : ["--contrast-weight",         0.0],
+        # mean of Gaussian weighting function
+        "exposure-mu"           : ["--exposure-mu",             0.5],
+        # standard deviation of Gaussian weighting function 
+        "exposure-sigma"        : ["--exposure-sigma",          0.2],
+        # limit number of blending LEVELS to use (1 to 29)
+        "levels"                : ["--levels",                  29],
+        # average over all masks; this is the default
+        "soft-mask"             : ["--soft-mask",               True],
+        # force hard blend masks and no averaging on finest scale
+        "hard-mask"             : ["--hard-mask",               False],
+        # apply gray-scale PROJECTOR in exposure or contrast weighing, where PROJECTOR is one of
+        # 0: "anti-value", 1: "average", 2: "l-star", 3: "lightness", 4: "luminance", 5: "pl-star", 6: "value"
+        "gray-projector"        : ["--gray-projector",          1],
+        # set window SIZE for local-contrast analysis     
+        "contrast-window-size"  : ["--contrast-window-size",    3],
+        # minimum CURVATURE for an edge to qualify; append "%" for relative values
+        "contrast-min-curvature": ["--contrast-min-curvature",  0],
+        # set scale on which to look for edges; positive LCESCALE switches on.
+        # local contrast enhancement by LCEFACTOR (EDGESCALE, LCESCALE, LCEFACTOR >= 0);
+        # append "%" to LCESCALE for values relative to EDGESCALE; append "%" to LCEFACTOR for relative value
+        "contrast-edge-scale"   : ["--contrast-edge-scale",     0, 0, 0],
+        # use CIECAM02 to blend colors
+        "use_ciecam"            : ["-c",                        False],
+        # save masks to files
+        #"save-masks"            : ["--save-masks", "%f-softmask-%n.png:%f-hardmask-%n.png"],
+        # load masks from files
+        #"load-masks"            : ["--load-masks", "%f-softmask-%n.png:%f-hardmask-%n.png"],
+        # image CACHESIZE in megabytes; default: 1024MB
+        "image_cachesize"       : ["-m",                        4096],
+        # image cache BLOCKSIZE in kilobytes; default: 2048KB
+        "image_cacheblocksize"  : ["-b",                        4096],
+        # Misc arguments
+        "misc_args"             : ["",                          False]
+    }
+}
+
 class data:
     """Données utiles"""
     def __init__(self):
-        self.install_folder=sys.path[0]                                                #On recupere le folder d'install
-        
-        self.config_folder = (os.getenv('XDG_CONFIG_HOME') or os.path.expanduser('~/.config/mfusion'))
-        self.default_folder = os.path.expanduser('~/')
-        self.temp_folder = tempfile.gettempdir()
-        self.default_file = ""
-        self.align_prefix = "aligned"
         self.update_folders()
+        settings["cpus"] = multiprocessing.cpu_count()
+        if settings["cpus"] > 1 and self.check_install("enfuse-mp"):
+            print("Will use all the powers of your CPU!")
+            settings["enfuser"] = "enfuse-mp"
+        else:  
+            settings["enfuser"] = "enfuse"
 
     def update_folders(self):        
         # save tmp files in current working folder
-        self.enfuse_folder  = self.temp_folder
-        self.preview_folder = self.temp_folder + "/preview"
-        if not os.path.exists(self.config_folder):
-            os.makedirs(self.config_folder)
-        if not os.path.exists(self.temp_folder):
-            os.makedirs(self.temp_folder)
-        if not os.path.exists(self.enfuse_folder):
-            os.makedirs(self.enfuse_folder)
-        if not os.path.exists(self.preview_folder):
-            os.makedirs(self.preview_folder)
+        settings["enfuse_folder"]  = settings["temp_folder"]
+        settings["preview_folder"] = settings["temp_folder"] + "/preview"
+        
+        if not os.path.exists(settings["config_folder"]):
+            os.makedirs(settings["config_folder"])
+        if not os.path.exists(settings["enfuse_folder"]):
+            os.makedirs(settings["enfuse_folder"])
+        if not os.path.exists(settings["preview_folder"]):
+            os.makedirs(settings["preview_folder"])
+
+    def get_enfuse_options(self):
+        options = []
+        for key, value in settings["fuse_settings"].items():
+            # special treatment for boolean values
+            if (key == "soft-mask" or key == "hard-mask" or key == "use_ciecam" or key == "misc_args"):
+                if value[1]:
+                    options.append(value[0])
+            elif key == "gray-projector":
+                options.append(value[0] + "=" + enfuse_gray_projector_options[value[1]])
+            elif key == "contrast-edge-scale" and value[1]:
+                options.append(value[0] + "=" + str(value[1]) + ":" + str(value[2]) + ":" + str(value[3]))
+            else:
+                if value[1]:
+                    if "--" in value[0]:
+                        options.append(value[0] + "=" + str(value[1]))
+                    else:
+                        options.append(value[0] + " " + str(value[1]))
+        return options
+
+    def get_align_options(self):
+        options = []
+        for key, value in settings["align_settings"].items():
+            # special treatment for boolean values
+            if (key == "auto_crop" or key == "opt_img_shift" or key == "opt_fov" or key == "use_gpu" or key == "misc_args"):
+                if value[1]:
+                    options.append(value[0])
+            else:
+                if value[1]:
+                    if "--" in value[0]:
+                        options.append(value[0] + "=" + str(value[1]))
+                    else:
+                        options.append(value[0] + " " + str(value[1]))
+        return options
 
     def check_install(self, name):
-        a=False
+        a = False
         for dir in os.environ['PATH'].split(":"):
             prog = os.path.join(dir, name)
             if os.path.exists(prog): 
-                a=True
+                a = True
         return a
+
 
 
 ##############################################################
@@ -145,18 +258,10 @@ class Interface:
         # Set default icon
         Gtk.Window.set_default_icon_from_file(IMG + 'macrofusion.png') 
         
-        self.cpus = multiprocessing.cpu_count()
         if not data.check_install("enfuse"):
             self.messageinthebottle(_("Can't find Enfuse.\nPlease check enblend/enfuse is installed.\nStopping..."))
             sys.exit()
 		        
-        # Check cpus
-        if self.cpus > 1 and data.check_install("enfuse-mp"):
-            print("Will use all the powers of your CPU!")
-            self.enfuser = "enfuse-mp"
-        else:  
-            self.enfuser = "enfuse"
-        
 	    #Set the Glade file
         self.gui = Gtk.Builder()
         self.gui.set_translation_domain(APP)
@@ -173,14 +278,14 @@ class Interface:
         self.buttonaddfile = self.gui.get_object("buttonaddfile")
         self.buttondelfile = self.gui.get_object("buttondelfile")
         self.statusbar = self.gui.get_object("status1")
-        self.statusbar.push(1,(_("CPU Cores: %s") % self.cpus))
+        self.statusbar.push(1,(_("CPU Cores: %s") % settings["cpus"]))
 
         self.hscaleexp = self.gui.get_object("hscaleexp")
         self.ajus_exp = Gtk.Adjustment(value=1, lower=0, upper=1, step_incr=0.1, page_incr=0.1, page_size=0)
         self.hscaleexp.set_adjustment(self.ajus_exp)
         self.spinbuttonexp = self.gui.get_object("spinbuttonexp")
         self.spinbuttonexp.set_digits(1)
-        self.spinbuttonexp.set_value(1)
+        self.spinbuttonexp.set_value(settings["fuse_settings"]["exposure-weight"][1])
         self.spinbuttonexp.set_adjustment(self.ajus_exp)
         
         self.hscalecont = self.gui.get_object("hscalecont")
@@ -188,7 +293,7 @@ class Interface:
         self.hscalecont.set_adjustment(self.ajus_cont)
         self.spinbuttoncont = self.gui.get_object("spinbuttoncont")
         self.spinbuttoncont.set_digits(1)
-        self.spinbuttoncont.set_value(0)
+        self.spinbuttoncont.set_value(settings["fuse_settings"]["contrast-weight"][1])
         self.spinbuttoncont.set_adjustment(self.ajus_cont)
         
         self.hscalesat = self.gui.get_object("hscalesat")
@@ -196,7 +301,7 @@ class Interface:
         self.hscalesat.set_adjustment(self.ajus_sat)
         self.spinbuttonsat = self.gui.get_object("spinbuttonsat")
         self.spinbuttonsat.set_digits(1)
-        self.spinbuttonsat.set_value(0.2)
+        self.spinbuttonsat.set_value(settings["fuse_settings"]["saturation-weight"][1])
         self.spinbuttonsat.set_adjustment(self.ajus_sat)
         
         self.hscalemu = self.gui.get_object("hscalemu")
@@ -204,7 +309,7 @@ class Interface:
         self.hscalemu.set_adjustment(self.ajus_mu)
         self.spinbuttonmu = self.gui.get_object("spinbuttonmu")
         self.spinbuttonmu.set_digits(2)
-        self.spinbuttonmu.set_value(0.5)
+        self.spinbuttonmu.set_value(settings["fuse_settings"]["exposure-mu"][1])
         self.spinbuttonmu.set_adjustment(self.ajus_mu)
         
         self.hscalesigma = self.gui.get_object("hscalesigma")
@@ -212,7 +317,7 @@ class Interface:
         self.hscalesigma.set_adjustment(self.ajus_sigma)
         self.spinbuttonsigma = self.gui.get_object("spinbuttonsigma")
         self.spinbuttonsigma.set_digits(2)
-        self.spinbuttonsigma.set_value(0.2)
+        self.spinbuttonsigma.set_value(settings["fuse_settings"]["exposure-sigma"][1])
         self.spinbuttonsigma.set_adjustment(self.ajus_sigma)
 
         self.spinbuttonlargeurprev = self.gui.get_object("spinbuttonlargeurprev")
@@ -240,26 +345,43 @@ class Interface:
 
         #valeurs des options et configurations :
         self.check_pyramidelevel = self.gui.get_object("check_pyramidelevel")
+        self.check_pyramidelevel.set_active(1)
+
         self.spinbuttonlevel = self.gui.get_object("spinbuttonlevel")
+        self.spinbuttonlevel.set_value(settings["fuse_settings"]["levels"][1])
+
         self.check_hardmask = self.gui.get_object("check_hardmask")
+        self.check_hardmask.set_active(settings["fuse_settings"]["hard-mask"][1])
+
         self.check_contwin = self.gui.get_object("check_contwin")
         self.spinbuttoncontwin = self.gui.get_object("spinbuttoncontwin")
-        
+        self.spinbuttoncontwin.set_value(settings["fuse_settings"]["contrast-window-size"][1])
+
         self.check_courb = self.gui.get_object("check_courb")
         self.check_prctcourb = self.gui.get_object("check_prctcourb")
         self.spinbuttoncourb = self.gui.get_object("spinbuttoncourb")
+        self.spinbuttoncourb.set_value(settings["fuse_settings"]["contrast-min-curvature"][1])
+
         self.check_detecbord = self.gui.get_object("check_detecbord")
         self.spinbuttonEdge = self.gui.get_object("spinbuttonEdge")
-        # self.spinbuttonEdge.set_value(self.conf.getint('prefs', 'w'))
-        
+        self.spinbuttonEdge.set_value(settings["fuse_settings"]["contrast-edge-scale"][1])
+
         self.spinbuttonLceS = self.gui.get_object("spinbuttonLceS")
+        self.spinbuttonLceS.set_value(settings["fuse_settings"]["contrast-edge-scale"][2])
+
         self.spinbuttonLceF = self.gui.get_object("spinbuttonLceF")
+        self.spinbuttonLceF.set_value(settings["fuse_settings"]["contrast-edge-scale"][3])
+
         self.check_lces = self.gui.get_object("check_lces")
         self.check_lcef = self.gui.get_object("check_lcef")
         
         self.check_ciecam = self.gui.get_object("check_ciecam")
+        self.check_ciecam.set_active(settings["fuse_settings"]["use_ciecam"][1])
+
         self.check_desatmeth = self.gui.get_object("check_desatmeth")
         self.combobox_desatmet = self.gui.get_object("combobox_desatmet")
+        self.combobox_desatmet.set_active(settings["fuse_settings"]["gray-projector"][1])
+ 
         self.spinbuttonlargeurprev = self.gui.get_object("spinbuttonlargeurprev")
         self.spinbuttonhauteurprev = self.gui.get_object("spinbuttonhauteurprev")
         self.checkbuttoncache = self.gui.get_object("checkbuttoncache")
@@ -296,12 +418,17 @@ class Interface:
         self.checkbutton_a5_crop.set_sensitive(False)
         self.checkbutton_a5_field.set_sensitive(False)
         self.checkbutton_a5_shift.set_sensitive(False)
-        self.checkbuttonalignfiles.set_sensitive(False)          
-            
+        self.checkbuttonalignfiles.set_sensitive(False)
+
+        # update gui according to settings
+        self.checkbutton_a5_crop.set_active(settings["align_settings"]["auto_crop"][1])
+        self.checkbutton_a5_field.set_active(settings["align_settings"]["opt_fov"][1])
+        self.checkbutton_a5_shift.set_active(settings["align_settings"]["opt_img_shift"][1])
+
         # Read values from config
         self.conf = configparser.ConfigParser()
-        if os.path.isfile(data.config_folder + '/mfusion.cfg'):
-            self.conf.read(data.config_folder + '/mfusion.cfg')
+        if os.path.isfile(settings["config_folder"] + '/mfusion.cfg'):
+            self.conf.read(settings["config_folder"] + '/mfusion.cfg')
         if self.conf.has_option('prefs', 'pwidth'):
             self.spinbuttonlargeurprev.set_value(self.conf.getint('prefs', 'pwidth'))
         if self.conf.has_option('prefs', 'pheight'):
@@ -335,10 +462,10 @@ class Interface:
         if self.conf.has_option('prefs', 'alignfiles'):
             self.checkbuttonalignfiles.set_active(self.conf.getboolean('prefs', 'alignfiles'))
         if self.conf.has_option('prefs', 'default_folder'):  
-            data.default_folder = self.conf.get('prefs', 'default_folder')
-            if not os.path.isdir(data.default_folder):
-                print("Default folder '%s' doesn't exist, using '%s'" % (data.default_folder, data.config_folder))
-                data.default_folder = os.path.expanduser('~/')
+            settings["default_folder"] = self.conf.get('prefs', 'default_folder')
+            if not os.path.isdir(settings["default_folder"]):
+                print(_("Default folder '%s' doesn't exist, using '%s'") % (settings["default_folder"], settings["config_folder"]))
+                settings["default_folder"] = os.path.expanduser('~/')
             data.update_folders()
         if self.conf.has_option('prefs', 'editor'):           
             self.entryedit_field.set_text(self.conf.get('prefs', 'editor'))
@@ -372,6 +499,7 @@ class Interface:
         #initialisation de la liste d'images a fusionner
         self.inittreeview()
 
+
     def activate_align_options(self, action):
         if self.checkbutton_a5_align.get_active():
             self.checkbutton_a5_crop.set_sensitive(True)
@@ -402,9 +530,9 @@ class Interface:
         return True
         
     def cleanup(self):
-        for self.files in os.walk(data.preview_folder):
+        for self.files in os.walk(settings["preview_folder"]):
             for self.filename in self.files[2]:
-                os.remove(data.preview_folder + "/" + self.filename)
+                os.remove(settings["preview_folder"] + "/" + self.filename)
         
     def inittreeview(self):
         """initialisation de la liste d'images a importer"""
@@ -447,7 +575,7 @@ class Interface:
         files = [urllib.parse.unquote(x) for x in files]
         (path, file) = os.path.split(files[0])
         (filename, ext) = os.path.splitext(file)
-        data.default_file = filename+"-fused"+ext
+        settings["default_file"] = filename+"-fused"+ext
         self.put_files_to_the_list(files)
         
     def add(self, widget):
@@ -459,7 +587,6 @@ class Interface:
         self.treeselectionsuppr.set_mode(Gtk.SelectionMode.MULTIPLE)            #Pour pouvoir en selectionner plusieurs
         (model, pathlist) = self.treeselectionsuppr.get_selected_rows()
         for i in pathlist:
-            print(i)
             treeiter = model.get_iter(i)
             self.liststoreimport.remove(treeiter) 
             
@@ -468,7 +595,7 @@ class Interface:
             
     def preview(self, widget):
         self.taille=(self.spinbuttonlargeurprev.get_value(), self.spinbuttonhauteurprev.get_value())
-        self.name=data.preview_folder + "/" + "preview.tif"
+        self.name=settings["preview_folder"] + "/" + "preview.tif"
         item=0
         if len(self.liststoreimport)>0:
             self.ref=list(zip(*self.liststoreimport))[0] 
@@ -476,7 +603,9 @@ class Interface:
                 if item2:
                     item+=1
                     if item>1:
-                        self.thread_preview = Thread_Preview(self.taille, self.get_options(), self.get_options_align(), self.liststoreimport) 
+                        self.update_align_options()
+                        self.update_enfuse_options()
+                        self.thread_preview = Thread_Preview(self.taille, self.liststoreimport) 
                         self.thread_preview.start()
                         timer = GObject.timeout_add (100, self.pulsate)
                         break
@@ -484,66 +613,65 @@ class Interface:
             self.messageinthebottle(_("Please add or activate at least two images.\n\n Cannot do anything smart with one or no image."))
 
 
-    def get_options_align(self):
-        self.options_align = ['--gpu']
+    def update_align_options(self):
         if self.checkbutton_a5_align.get_active():
-            if self.checkbutton_a5_crop.get_active():
-                self.options_align.append('-C')
-            if self.checkbutton_a5_shift.get_active():
-                self.options_align.append('-i')
-            if self.checkbutton_a5_field.get_active():
-                self.options_align.append('-m')
-        return self.options_align
+            settings["align_settings"]["auto_crop"][1]     = self.checkbutton_a5_crop.get_active()
+            settings["align_settings"]["opt_img_shift"][1] = self.checkbutton_a5_shift.get_active()
+            settings["align_settings"]["opt_fov"][1]       = self.checkbutton_a5_field.get_active()
 
-    def get_options(self):
-        options=["--exposure-weight=" + str(self.spinbuttonexp.get_value()), 
-                 "--exposure-mu=" + str(self.spinbuttonmu.get_value()), 
-                 "--exposure-sigma=" + str(self.spinbuttonsigma.get_value()),
-                 "--saturation-weight=" + str(self.spinbuttonsat.get_value()),
-                 "--contrast-weight=" + str(self.spinbuttoncont.get_value())]
-        if self.check_pyramidelevel.get_active():            
-            options.append('--levels=' + str(self.spinbuttonlevel.get_value_as_int()))
-        if self.check_hardmask.get_active():
-            options.append('--hard-mask')
+    def update_enfuse_options(self):
+        settings["fuse_settings"]["exposure-weight"][1]     = self.spinbuttonexp.get_value()
+        settings["fuse_settings"]["exposure-mu"][1]         = self.spinbuttonmu.get_value()
+        settings["fuse_settings"]["exposure-sigma"][1]      = self.spinbuttonsigma.get_value()
+        settings["fuse_settings"]["contrast-weight"][1]     = self.spinbuttoncont.get_value()
+        settings["fuse_settings"]["saturation-weight"][1]   = self.spinbuttonsat.get_value()
+        settings["fuse_settings"]["levels"][1]              = self.spinbuttonlevel.get_value_as_int()
+        settings["fuse_settings"]["hard-mask"][1]           = self.check_hardmask.get_active()
+
         if self.check_contwin.get_active():
-            options.append('--contrast-window-size=' + str(self.spinbuttoncontwin.get_value_as_int()))
+            settings["fuse_settings"]["contrast-window-size"][1] = self.spinbuttoncontwin.get_value_as_int()
+ 
         if self.check_courb.get_active():
             if self.check_prctcourb.get_active():
-                options.append('--contrast-min-curvature=' + str(self.spinbuttoncourb.get_value()) + "%")
+                settings["fuse_settings"]["contrast-min-curvature"][1] = str(self.spinbuttoncourb.get_value()) + "%"
             else:
-                options.append('--contrast-min-curvature=' + str(self.spinbuttoncourb.get_value()))
+                settings["fuse_settings"]["contrast-min-curvature"][1] = str(self.spinbuttoncourb.get_value())
+
         if self.check_detecbord.get_active():
-            opts='--contrast-edge-scale=' + str(self.spinbuttonEdge.get_value()) + ':'
+            settings["fuse_settings"]["contrast-edge-scale"][1] = str(self.spinbuttonEdge.get_value())
             if self.check_lces.get_active():
-                opts+=str(self.spinbuttonLceS.get_value()) + '%:'
+                settings["fuse_settings"]["contrast-edge-scale"][2] = str(self.spinbuttonLceS.get_value()) + '%'
             else:
-                opts+=str(self.spinbuttonLceS.get_value()) + ':'
+                settings["fuse_settings"]["contrast-edge-scale"][2] = str(self.spinbuttonLceS.get_value())
             if self.check_lcef.get_active():
-                opts+=str(self.spinbuttonLceF.get_value()) + '%'
+                settings["fuse_settings"]["contrast-edge-scale"][3] = str(self.spinbuttonLceF.get_value()) + '%'
             else:
-                opts+=str(self.spinbuttonLceF.get_value()) + ''
-            options.append(opts)
-             # + str(self.spinbuttonLceF.get_value()) + '%')
+                settings["fuse_settings"]["contrast-edge-scale"][3] = str(self.spinbuttonLceF.get_value())
+        
         if self.check_ciecam.get_active():
-            options.append('-c')
+            settings["fuse_settings"]["use_ciecam"][1] = True
+
         if self.check_desatmeth.get_active():
-            opt={-1:None, 0:"average", 1:'l-star', 2:'lightness', 3:'value', 4:'luminance'}
-            options.append('--gray-projector=' + opt[self.combobox_desatmet.get_active()])
+            settings["fuse_settings"]["gray-projector"][1] = self.combobox_desatmet.get_active()
+
         if not self.checkbuttoncache.get_active():
-            options.append('-m ' + str(self.spinbuttoncache.get_value_as_int()))
+            settings["fuse_settings"]["image_cachesize"][1] = self.spinbuttoncache.get_value_as_int()
+
         if not self.checkbuttonbloc.get_active():
-            options.append('-b ' + str(self.spinbuttonbloc.get_value_as_int()))
+            settings["fuse_settings"]["image_cacheblocksize"][1] = self.spinbuttonbloc.get_value_as_int()
+
         if not self.checkbuttontaillefinale.get_active():
-            options.append('-f ' + str(self.spinbuttonlargeurfinale.get_value_as_int()) + 'x'
-                                 + str(self.spinbuttonhauteurfinale.get_value_as_int()) + 'x'
-                                 + str(self.spinbuttonxoff.get_value_as_int()) + 'x'
-                                 + str(self.spinbuttonyoff.get_value_as_int()))
+            settings["fuse_settings"]["output_dimensions"] = ["-f",
+                                                    str(self.spinbuttonlargeurfinale.get_value_as_int()) + 'x'
+                                                    + str(self.spinbuttonhauteurfinale.get_value_as_int()) + 'x'
+                                                    + str(self.spinbuttonxoff.get_value_as_int()) + 'x'
+                                                    + str(self.spinbuttonyoff.get_value_as_int())  ]
+
         if self.name.endswith(('.tif', '.tiff', '.TIF', '.TIFF')):
-            tiffopt={0:"NONE", 1:"PACKBITS", 2:"LZW", 3:"DEFLATE"}
-            options.append("--compression=" + tiffopt[self.combtiff.get_active()])
+            settings["fuse_settings"]["compression"][1] = tiff_compression[self.combtiff.get_active()]
         if self.name.endswith(('.jpg', '.jpeg', '.JPG', '.JPEG')) and (not self.checkbuttonjpegorig.get_active()):
-            options.append("--compression=" + str(int(self.hscalecomprjpeg.get_value())))       
-        return options
+            settings["fuse_settings"]["compression"][1] = str(int(self.hscalecomprjpeg.get_value()))      
+
         
     def pulsate(self):
         if self.thread_preview.isAlive():           #Tant que le thread est en cours, 
@@ -553,16 +681,16 @@ class Interface:
         else:
             self.progressbar.set_fraction(1)
             self.progressbar.set_text(_("Preview generated"))
-            self.imagepreview.set_from_file(data.preview_folder + "/" + "preview.tif")
+            self.imagepreview.set_from_file(settings["preview_folder"] + "/" + "preview.tif")
             return False
 
     def baswitch(self, widget):
-        if (not int(self.buttonbeforeafter.get_relief())) and (os.path.exists(data.preview_folder + "/preview_.tif")):
+        if (not int(self.buttonbeforeafter.get_relief())) and (os.path.exists(settings["preview_folder"] + "/preview_.tif")):
             self.buttonbeforeafter.props.relief = Gtk.ReliefStyle.NONE
-            self.imagepreview.set_from_file(data.preview_folder + "/preview_.tif")
-        elif os.path.exists(data.preview_folder + "/preview_.tif"):
+            self.imagepreview.set_from_file(settings["preview_folder"] + "/preview_.tif")
+        elif os.path.exists(settings["preview_folder"] + "/preview_.tif"):
             self.buttonbeforeafter.props.relief = Gtk.ReliefStyle.NORMAL
-            self.imagepreview.set_from_file(data.preview_folder + "/preview.tif")
+            self.imagepreview.set_from_file(settings["preview_folder"] + "/preview.tif")
         
     def fusion(self,widget):
         if len(self.liststoreimport) <= 1:
@@ -576,9 +704,9 @@ class Interface:
             self.start('')
     
     def sendto(self, widget):
-        self.name=(data.preview_folder + "/sendto.tif")
+        self.name=(settings["preview_folder"] + "/sendto.tif")
         if not os.path.exists(self.name):
-            self.messageinthebottle(_("Please add or activate at least two images.\n\n Cannot do anything smart with the one or no image."))
+            self.messageinthebottle(_("Please add or activate at least two images.\n\n Cannot do anything smart with one or no image."))
             return
         if not self.check_editor(0):
             return
@@ -618,7 +746,7 @@ class Interface:
         for item in self.liststoreimport:
             if item[0]:
                self.liste_images.append(item[1])
-               self.liste_aligned.append(data.preview_folder + "/" + data.align_prefix + format(index, "04d") + ".tif")
+               self.liste_aligned.append(settings["preview_folder"] + "/" + settings.align_prefix + format(index, "04d") + ".tif")
                index += 1
         if not Gui.checkbutton_a5_align.get_active():
             self.liste_aligned=self.liste_images
@@ -628,12 +756,12 @@ class Interface:
         if len(self.liste_images) <= 1:
             self.messageinthebottle(_("Please add or activate at least two images.\n\n Cannot do anything smart with the one or no image."))
             return -1
-        command_align = ['align_image_stack', '--gpu', '-a', data.preview_folder + '/' + data.align_prefix] + self.get_options_align() + self.liste_images
-        command_fuse = [Gui.enfuser, "-o", self.name] + self.get_options() + self.liste_aligned
-        ProFus = Progress_Fusion(command_fuse, command_align, self.liste_images, self.liste_aligned, self.issend)
+        self.update_align_options()
+        self.update_enfuse_options()
+        ProFus = Progress_Fusion(self.liste_images, self.liste_aligned, self.issend)
         
     def apropos(self, widget):
-        self.fen=AproposFen(self.win)
+        self.fen = AproposFen(self.win)
         
     def save_settings(self):
         conf = configparser.ConfigParser()
@@ -656,8 +784,8 @@ class Interface:
         conf.set('prefs', 'exif', str(self.checkbuttonexif.get_active()))
         conf.set('prefs', 'alignfiles', str(self.checkbuttonalignfiles.get_active()))
         conf.set('prefs', 'editor',  str(self.entryedit_field.get_text()))
-        conf.set('prefs', 'default_folder', data.default_folder)
-        conf.write(open(data.config_folder+ '/mfusion.cfg', 'w'))
+        conf.set('prefs', 'default_folder', settings["default_folder"])
+        conf.write(open(settings["config_folder"]+ '/mfusion.cfg', 'w'))
         return
 
     def pixbuf2Image(self, pb):
@@ -705,7 +833,7 @@ class OpenFiles_Dialog:
                                                     Gtk.FileChooserAction.OPEN,
                                                     (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,Gtk.STOCK_OK, Gtk.ResponseType.OK))
         self.file_dialog.set_select_multiple(True)
-        self.file_dialog.set_current_folder(data.default_folder)
+        self.file_dialog.set_current_folder(settings["default_folder"])
         self.file_dialog.set_filter(self.filter)
         self.file_dialog.use_preview = True
         self.previewidget = Gtk.Image()
@@ -718,10 +846,10 @@ class OpenFiles_Dialog:
             self.badfiles=[]
             (path, file) = os.path.split(self.files[0])
             (filename, ext) = os.path.splitext(file)
-            data.default_file = filename+"-fused"+ext
+            settings["default_file"] = filename+"-fused"+ext
             Gui.put_files_to_the_list(self.files)
 
-        data.default_folder = self.file_dialog.get_current_folder()
+        settings["default_folder"] = self.file_dialog.get_current_folder()
         data.update_folders()
         self.file_dialog.destroy()
     
@@ -757,13 +885,13 @@ class SaveFiles_Dialog:
                                                    parent, 
                                                    Gtk.FileChooserAction.SAVE,
                                                    (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_SAVE, Gtk.ResponseType.OK))
-        self.file_dialog.set_current_folder(data.default_folder)
-        self.file_dialog.set_current_name(data.default_file)
+        self.file_dialog.set_current_folder(settings["default_folder"])
+        self.file_dialog.set_current_name(settings["default_file"])
         self.file_dialog.set_do_overwrite_confirmation(True)
         if (self.file_dialog.run() == Gtk.ResponseType.OK):
             self.resultat = self.file_dialog.get_filename()
 
-        data.default_folder = self.file_dialog.get_current_folder()
+        settings["default_folder"] = self.file_dialog.get_current_folder()
         self.file_dialog.destroy()
 
     def get_name(self):
@@ -777,47 +905,37 @@ class SaveFiles_Dialog:
 #####################################################################
             
 class Thread_Preview(threading.Thread):
-    def __init__(self, taille, options, options_align, liste):
+    def __init__(self, taille, liste):
         threading.Thread.__init__ (self)
         self.taille=taille
-        self.options=options
         self.liste=liste
-        self.options_align=options_align
             
     def run(self):
         images_a_fusionner=[]
         images_a_align=[]
         index = 0
         global session_images_bak
-        global session_options_bak 
-           
+        global session_options_bak
         for item in self.liste:
             if item[0]:
                 chemin_miniature=create_thumbnail(item[1],(int(self.taille[0]), int(self.taille[1])))
                 images_a_align.append(chemin_miniature)
-                images_a_fusionner.append(data.preview_folder + "/test" + format(index, "04d") + ".tif")
+                images_a_fusionner.append(settings["preview_folder"] + "/test" + format(index, "04d") + ".tif")
                 index += 1
         if (len(images_a_fusionner))<=1:
             Gui.messageinthebottle(_("Please add two or more images.\n\n Cannot do anything smart with the one image."))
             return
         if not Gui.checkbutton_a5_align.get_active():
-            images_a_fusionner=images_a_align
-        if Gui.checkbutton_a5_align.get_active()                                        \
-           and (len(images_a_align) != len(session_images_bak)                          \
-           or len(self.options_align) != len(session_options_bak)                       \
-           or len(list(axz for axz in images_a_align if axz not in session_images_bak)) \
-           or len(list(axz2 for axz2 in self.options_align if axz2 not in session_options_bak))):
-            command=["align_image_stack", "-a", data.preview_folder + "/test"] + self.options_align + images_a_align
+            images_a_fusionner = images_a_align
+        if Gui.checkbutton_a5_align.get_active():
+            command=["align_image_stack", "-a", settings["preview_folder"] + "/test"] + data.get_align_options() + images_a_align
             Gui.statusbar.push(15, _(":: Align photos..."))
             preview_process=subprocess.Popen(command, stdout=subprocess.PIPE)
             preview_process.wait()
-            session_options_bak=self.options_align
             session_images_bak=images_a_align
             Gui.statusbar.pop(15)
         Gui.statusbar.push(15, _(":: Fusing photos..."))
-        print (self.options)
-
-        command=[Gui.enfuser, "-o", data.preview_folder + "/" + "preview.tif"] + self.options + images_a_fusionner
+        command=[settings["enfuser"], "-o", settings["preview_folder"] + "/" + "preview.tif"] + data.get_enfuse_options() + images_a_fusionner
         preview_process=subprocess.Popen(command, stdout=subprocess.PIPE)
         preview_process.wait()
         Gui.statusbar.pop(15)
@@ -828,7 +946,7 @@ class Thread_Preview(threading.Thread):
 #######################################################################
         
 class Progress_Fusion:
-    def __init__(self, command_fuse, command_align, liste, liste_aligned, issend):
+    def __init__(self, liste, liste_aligned, issend):
         
         #self.progress = Gtk.glade.XML(fname=UI + "progress.xml", domain=APP)
         self.progress = Gtk.Builder()
@@ -843,7 +961,7 @@ class Progress_Fusion:
         self.progress.connect_signals(self.dic1)        
         self.info_label.set_text(_('Fusion images...'))
        
-        self.thread_fusion = Thread_Fusion(command_fuse, command_align, liste, liste_aligned, issend)  #On prepare le thread qui va faire tout le boulot
+        self.thread_fusion = Thread_Fusion(liste, liste_aligned, issend)  #On prepare le thread qui va faire tout le boulot
         self.thread_fusion.start()                                     #On le lance
         timer = GObject.timeout_add (100, self.pulsate)
         
@@ -870,8 +988,8 @@ class Progress_Fusion:
 class Thread_Fusion(threading.Thread):
     def __init__(self, command_fuse, command_align, liste, liste_aligned, issend):
         threading.Thread.__init__ (self)
-        self.command_fuse = command_fuse
-        self.command_align = command_align
+        self.command_fuse =  [settings["enfuser"], "-o", self.name] + data.get_align_options() + self.liste_aligned
+        self.command_align = ['align_image_stack', '-a', settings["preview_folder"] + '/' + settings.align_prefix] + data.get_align_options() + self.liste_images
         self.issend = issend
         self.liste = liste
         self.liste_aligned = liste_aligned
@@ -885,11 +1003,11 @@ class Thread_Fusion(threading.Thread):
                 # copy aligned files in working folder for further processing by user:
                 count = 0
                 for file in self.liste:
-                    tmp_filename    = self.liste_aligned[count] #data.align_prefix+str(count).zfill(4)+".tif"
+                    tmp_filename    = self.liste_aligned[count] #settings.align_prefix+str(count).zfill(4)+".tif"
                     (path, file_)   = os.path.split(file)
                     (filename, ext) = os.path.splitext(file_)
-                    new_filename    = data.preview_folder + "/" + filename + "_" + data.align_prefix + ".tif"
-                    new_filename_dst = path + "/" + filename + "_" + data.align_prefix + ".tif"
+                    new_filename    = settings["preview_folder"] + "/" + filename + "_" + settings.align_prefix + ".tif"
+                    new_filename_dst = path + "/" + filename + "_" + settings.align_prefix + ".tif"
                     if os.path.exists(new_filename):
                         os.remove(new_filename)
                     shutil.copy(tmp_filename, new_filename)
@@ -898,8 +1016,7 @@ class Thread_Fusion(threading.Thread):
                         command = ["mogrify", "-format", "jpg", "-quality", "100", new_filename ]
                         output  = subprocess.Popen(command).communicate()[0]
                         new_filename = os.path.splitext(new_filename)[0] + ".jpg"
-                        print(command)
-
+                        
                     if os.path.exists(new_filename_dst):
                         os.remove(new_filename_dst)
                     shutil.move(new_filename, new_filename_dst)
@@ -934,7 +1051,6 @@ class AproposFen:
         self.aboutdialog.connect("response", self.close_about)
         self.aboutdialog.show()
         
-        
     def close_about(self, widget, event):
         self.aboutdialog.destroy()
 
@@ -947,7 +1063,7 @@ if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     data = data()                                              
     Gui  = Interface()
-                                                                       
+                               
     if (len(sys.argv)>1):     
         files=sys.argv[1:]
         Gui.put_files_to_the_list(files)
