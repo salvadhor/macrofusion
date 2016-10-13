@@ -108,6 +108,7 @@ settings = {
     "enfuser"                   : "enfuse",
     "cpus"                      : 1,
     "align_settings"            :
+    # Options overview: http://wiki.panotools.org/Align_image_stack
     {
         # Auto crop the image to the area covered by all images.
         "auto_crop"             : ["-C",        True],
@@ -621,8 +622,13 @@ class Interface:
         settings["fuse_settings"]["contrast-weight"][1]     = self.spinbuttoncont.get_value()
         settings["fuse_settings"]["saturation-weight"][1]   = self.spinbuttonsat.get_value()
         settings["fuse_settings"]["levels"][1]              = self.spinbuttonlevel.get_value_as_int()
-        settings["fuse_settings"]["hard-mask"][1]           = self.check_hardmask.get_active()
-
+        if self.check_hardmask.get_active():
+            settings["fuse_settings"]["hard-mask"][1] = True
+            settings["fuse_settings"]["soft-mask"][1] = False
+        else:
+            settings["fuse_settings"]["hard-mask"][1] = False
+            settings["fuse_settings"]["soft-mask"][1] = True
+            
         if self.check_contwin.get_active():
             settings["fuse_settings"]["contrast-window-size"][1] = self.spinbuttoncontwin.get_value_as_int()
  
@@ -923,12 +929,14 @@ class Thread_Preview(threading.Thread):
             images_a_fusionner = images_a_align
         if Gui.checkbutton_a5_align.get_active():
             command = ["align_image_stack", "-a", settings["preview_folder"] + "/test"] + data.get_align_options() + images_a_align
+            print(command)
             Gui.statusbar.push(15, _(":: Align photos..."))
             preview_process = subprocess.Popen(command, stdout=subprocess.PIPE)
             preview_process.wait()
             Gui.statusbar.pop(15)
         Gui.statusbar.push(15, _(":: Fusing photos..."))
         command = [settings["enfuser"], "-o", settings["preview_folder"] + "/" + "preview.tif"] + data.get_enfuse_options() + images_a_fusionner
+        print(command)
         preview_process = subprocess.Popen(command, stdout=subprocess.PIPE)
         preview_process.wait()
         Gui.statusbar.pop(15)
@@ -988,7 +996,8 @@ class Thread_Fusion(threading.Thread):
         self.liste_aligned = liste_aligned
         
     def run(self):
-        if Gui.checkbutton_a5_align.get_active():            
+        if Gui.checkbutton_a5_align.get_active():       
+            print(command)     
             align_process = subprocess.Popen(self.command_align, stdout=subprocess.PIPE)
             align_process.wait()
         
@@ -1014,7 +1023,8 @@ class Thread_Fusion(threading.Thread):
                         os.remove(new_filename_dst)
                     shutil.move(new_filename, new_filename_dst)
                     count += 1
-            
+
+        print(command)
         fusion_process = subprocess.Popen(self.command_fuse, stdout=subprocess.PIPE)
         fusion_process.wait()
         
