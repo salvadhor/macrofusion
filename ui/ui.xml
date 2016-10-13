@@ -321,7 +321,7 @@
                         <property name="hscrollbar_policy">never</property>
                         <property name="shadow_type">etched-in</property>
                         <child>
-                          <object class="GtkTreeView" id="listeimages">
+                          <object class="GtkTreeView" id="listimages">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="headers_clickable">False</property>
@@ -1827,7 +1827,7 @@ or contrast weighing, where OPERATOR is one of
                                               </packing>
                                             </child>
                                             <child>
-                                              <object class="GtkCheckButton" id="checkbuttontaillefinale">
+                                              <object class="GtkCheckButton" id="checkbuttonfinalsize">
                                                 <property name="label" translatable="yes">Default</property>
                                                 <property name="use_action_appearance">False</property>
                                                 <property name="visible">True</property>
@@ -1866,7 +1866,7 @@ or contrast weighing, where OPERATOR is one of
                                                 <property name="can_focus">False</property>
                                                 <property name="orientation">vertical</property>
                                                 <child>
-                                                  <object class="GtkSpinButton" id="spinbuttonlargeurfinale">
+                                                  <object class="GtkSpinButton" id="spinbuttonfinalwidth">
                                                     <property name="visible">True</property>
                                                     <property name="can_focus">True</property>
                                                     <property name="invisible_char">•</property>
@@ -1907,7 +1907,7 @@ or contrast weighing, where OPERATOR is one of
                                                 <property name="can_focus">False</property>
                                                 <property name="orientation">vertical</property>
                                                 <child>
-                                                  <object class="GtkSpinButton" id="spinbuttonhauteurfinale">
+                                                  <object class="GtkSpinButton" id="spinbuttonfinalheight">
                                                     <property name="visible">True</property>
                                                     <property name="can_focus">True</property>
                                                     <property name="invisible_char">•</property>

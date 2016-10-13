@@ -71,25 +71,6 @@ locale.textdomain(APP)
 
 GObject.threads_init()
 
-def toggled_cb(cell, path, user_data):
-    model, column = user_data
-    model[path][column] = not model[path][column]
-    return
-
-# PLEASE REAPAIR!! Python-imaging can't open .tiff (or some of them)    
-def create_thumbnail(chemin,taille):
-    outfile = settings["preview_folder"] + '/' + os.path.split(chemin)[1]
-    try:
-        im = GdkPixbuf.Pixbuf.new_from_file_at_size(chemin, taille[0], taille[1])
-#        pb = Gtk.gdk.pixbuf_new_from_file(chemin)
-#        im = Interface.pixbuf2Image(Interface(),pb)
-#        im = Image.open(chemin)
-#        im.thumbnail(taille)
-#        im.save(outfile, "JPEG")
-        im.savev(outfile, "jpeg", [], [])
-    except IOError:
-        print(_("Generating %s thumbnail failed.") % chemin)
-    return outfile
 
 
 ####################################################
@@ -188,7 +169,7 @@ class data:
     def update_folders(self):        
         # save tmp files in current working folder
         settings["enfuse_folder"]  = settings["temp_folder"]
-        settings["preview_folder"] = settings["temp_folder"] + "/preview"
+        settings["preview_folder"] = os.path.join(settings["temp_folder"], "preview")
         
         if not os.path.exists(settings["config_folder"]):
             os.makedirs(settings["config_folder"])
@@ -240,6 +221,26 @@ class data:
         return a
 
 
+def toggled_cb(cell, path, user_data):
+    model, column = user_data
+    model[path][column] = not model[path][column]
+    return
+
+# PLEASE REAPAIR!! Python-imaging can't open .tiff (or some of them)    
+def create_thumbnail(path, size):
+    outfile = os.path.join(settings["preview_folder"], os.path.split(path)[1])
+    try:
+        im = GdkPixbuf.Pixbuf.new_from_file_at_size(path, size[0], size[1])
+#        pb = Gtk.gdk.pixbuf_new_from_file(chemin)
+#        im = Interface.pixbuf2Image(Interface(),pb)
+#        im = Image.open(chemin)
+#        im.thumbnail(size)
+#        im.save(outfile, "JPEG")
+        im.savev(outfile, "jpeg", [], [])
+    except IOError:
+        print(_("Generating %s thumbnail failed.") % path)
+    return outfile
+
 
 ##############################################################
 ###########Classe de l'interface##############################
@@ -251,7 +252,7 @@ class Interface:
     def __init__(self):
         
         # Set default icon
-        Gtk.Window.set_default_icon_from_file(IMG + 'macrofusion.png') 
+        Gtk.Window.set_default_icon_from_file(os.path.join(IMG, "macrofusion.png")) 
         
         if not data.check_install("enfuse"):
             self.messageinthebottle(_("Can't find Enfuse.\nPlease check enblend/enfuse is installed.\nStopping..."))
@@ -260,7 +261,7 @@ class Interface:
 	    #Set the Glade file
         self.gui = Gtk.Builder()
         self.gui.set_translation_domain(APP)
-        self.gui.add_from_file(UI + "ui.xml")
+        self.gui.add_from_file(os.path.join(UI + "ui.xml"))
 
         
         #Dans la foulee on chope la fenetre principale, ca sert a rien c'est pour
@@ -269,7 +270,7 @@ class Interface:
         self.win.set_title('MacroFusion' + __VERSION__)
                 
         #On chope le reste, et ca, ca va servir...
-        self.listeimages = self.gui.get_object("listeimages")
+        self.listimages = self.gui.get_object("listimages")
         self.buttonaddfile = self.gui.get_object("buttonaddfile")
         self.buttondelfile = self.gui.get_object("buttondelfile")
         self.statusbar = self.gui.get_object("status1")
@@ -331,7 +332,7 @@ class Interface:
         self.buttonedit = self.gui.get_object("buttoneditw")
         
         self.imagepreview = self.gui.get_object("imagepreview")
-        self.imagepreview.set_from_file(IMG2 + "logoSplash.png")
+        self.imagepreview.set_from_file(os.path.join(IMG2, "logoSplash.png"))
         
         self.progressbar = self.gui.get_object("progressbar")
         
@@ -383,9 +384,9 @@ class Interface:
         self.spinbuttoncache = self.gui.get_object("spinbuttoncache")
         self.checkbuttonbloc = self.gui.get_object("checkbuttonbloc")
         self.spinbuttonbloc = self.gui.get_object("spinbuttonbloc")
-        self.checkbuttontaillefinale = self.gui.get_object("checkbuttontaillefinale")
-        self.spinbuttonlargeurfinale = self.gui.get_object("spinbuttonlargeurfinale")
-        self.spinbuttonhauteurfinale = self.gui.get_object("spinbuttonhauteurfinale")
+        self.checkbuttonfinalsize = self.gui.get_object("checkbuttonfinalsize")
+        self.spinbuttonfinalwidth = self.gui.get_object("spinbuttonfinalwidth")
+        self.spinbuttonfinalheight = self.gui.get_object("spinbuttonfinalheight")
         self.spinbuttonxoff = self.gui.get_object("spinbuttonxoff")
         self.spinbuttonyoff = self.gui.get_object("spinbuttonyoff")
         self.checkbuttonjpegorig = self.gui.get_object("checkbuttonjpegorig")
@@ -422,8 +423,8 @@ class Interface:
 
         # Read values from config
         self.conf = configparser.ConfigParser()
-        if os.path.isfile(settings["config_folder"] + '/mfusion.cfg'):
-            self.conf.read(settings["config_folder"] + '/mfusion.cfg')
+        if os.path.isfile(os.path.join(settings["config_folder"], 'mfusion.cfg')):
+            self.conf.read(os.path.join(settings["config_folder"], 'mfusion.cfg'))
         if self.conf.has_option('prefs', 'pwidth'):
             self.spinbuttonlargeurprev.set_value(self.conf.getint('prefs', 'pwidth'))
         if self.conf.has_option('prefs', 'pheight'):
@@ -437,11 +438,11 @@ class Interface:
         if self.conf.has_option('prefs', 'blocsize'):
             self.spinbuttonbloc.set_value(self.conf.getint('prefs', 'blocsize'))
         if self.conf.has_option('prefs', 'outsize'):
-            self.checkbuttontaillefinale.set_active(self.conf.getboolean('prefs', 'outsize'))
+            self.checkbuttonfinalsize.set_active(self.conf.getboolean('prefs', 'outsize'))
         if self.conf.has_option('prefs', 'outwidth'):
-            self.spinbuttonlargeurfinale.set_value(self.conf.getint('prefs', 'outwidth'))
+            self.spinbuttonfinalwidth.set_value(self.conf.getint('prefs', 'outwidth'))
         if self.conf.has_option('prefs', 'outheight'):  
-            self.spinbuttonhauteurfinale.set_value(self.conf.getint('prefs', 'outheight'))
+            self.spinbuttonfinalheight.set_value(self.conf.getint('prefs', 'outheight'))
         if self.conf.has_option('prefs', 'xoff'):
             self.spinbuttonxoff.set_value(self.conf.getint('prefs', 'xoff'))
         if self.conf.has_option('prefs', 'yoff'):  
@@ -528,40 +529,40 @@ class Interface:
     def cleanup(self):
         for self.files in os.walk(settings["preview_folder"]):
             for self.filename in self.files[2]:
-                os.remove(settings["preview_folder"] + "/" + self.filename)
+                os.remove(os.path.join(settings["preview_folder"], self.filename))
         
     def inittreeview(self):
         """initialisation de la liste d'images a importer"""
         self.liststoreimport = Gtk.ListStore(bool, str, GdkPixbuf.Pixbuf, str)                    #création de la listestore qui contiendra les noms d'images
-        self.listeimages.set_model(self.liststoreimport)                        #on donne la liststore au l'afficheur treeview
-        self.listeimages.set_property('tooltip-column', 3)
+        self.listimages.set_model(self.liststoreimport)                        #on donne la liststore au l'afficheur treeview
+        self.listimages.set_property('tooltip-column', 3)
         
         self.colonneselect = Gtk.TreeViewColumn('')                             #Premiere colonne :
-        self.listeimages.append_column(self.colonneselect)                      #on l'ajoute au TreeView
+        self.listimages.append_column(self.colonneselect)                      #on l'ajoute au TreeView
         self.select=Gtk.CellRendererToggle()                                    #On creer le cellrender pour avoir des boutons toggle
         self.colonneselect.pack_start(self.select, True)                        #on met le cellrender dans la colonne
         self.colonneselect.add_attribute(self.select, 'active', 0)              #on met les boutons actifs par défaut
         
         # self.colonneimages = Gtk.TreeViewColumn(_('Image'))                        #deuxieme colonne, titre 'Image'
-        # self.listeimages.append_column(self.colonneimages)                      #on rajoute la colonne dans le treeview
+        # self.listimages.append_column(self.colonneimages)                      #on rajoute la colonne dans le treeview
         # self.cell = Gtk.CellRendererText()                                      #Ce sera des cellules de texte
         # self.colonneimages.pack_start(self.cell, True)                          #que l'on met dans la colonne
         # self.colonneimages.add_attribute(self.cell, 'text', 1)                  #et on specifie que c'est du texte simple
        
         self.colonneimages2 = Gtk.TreeViewColumn(_("Thumbnail"))                        #deuxieme colonne, titre 'Image'
-        self.listeimages.append_column(self.colonneimages2)                      #on rajoute la colonne dans le treeview
+        self.listimages.append_column(self.colonneimages2)                      #on rajoute la colonne dans le treeview
         self.cell2 = Gtk.CellRendererPixbuf()                                      #Ce sera des cellules de texte
         self.colonneimages2.set_sizing(Gtk.TreeViewColumnSizing.FIXED)
         self.colonneimages2.pack_start(self.cell2, True)                          #que l'on met dans la colonne
         self.colonneimages2.add_attribute(self.cell2, 'pixbuf', 2)
         self.cell2.set_property('visible', 1)
         
-        self.listeimages.set_rules_hint(True)
+        self.listimages.set_rules_hint(True)
         self.select.connect("toggled", toggled_cb, (self.liststoreimport, 0))   #Pour que les boutons de selection marchent
 
         # enable drag and drop destination for files
-        self.listeimages.enable_model_drag_dest([ ('STRING', 0, 0) ], Gdk.DragAction.DEFAULT)
-        self.listeimages.connect("drag_data_received", self.drag_data_received)
+        self.listimages.enable_model_drag_dest([ ('STRING', 0, 0) ], Gdk.DragAction.DEFAULT)
+        self.listimages.connect("drag_data_received", self.drag_data_received)
 
     def drag_data_received(self, treeview, context, x, y, selection, info, etime):
         files = selection.get_text().split()
@@ -575,11 +576,11 @@ class Interface:
         self.put_files_to_the_list(files)
         
     def add(self, widget):
-        FenOuv=OpenFiles_Dialog(self.liststoreimport, self.win)
-        self.liststoreimport=FenOuv.get_model()
+        dialog = OpenFiles_Dialog(self.liststoreimport, self.win)
+        self.liststoreimport=dialog.get_model()
 
     def delete(self, widget):
-        self.treeselectionsuppr=self.listeimages.get_selection()                #pour récupérer quels files sont selectionnés
+        self.treeselectionsuppr=self.listimages.get_selection()                #pour récupérer quels files sont selectionnés
         self.treeselectionsuppr.set_mode(Gtk.SelectionMode.MULTIPLE)            #Pour pouvoir en selectionner plusieurs
         (model, pathlist) = self.treeselectionsuppr.get_selected_rows()
         for i in pathlist:
@@ -590,18 +591,18 @@ class Interface:
         self.liststoreimport.clear()
             
     def preview(self, widget):
-        self.taille=(self.spinbuttonlargeurprev.get_value(), self.spinbuttonhauteurprev.get_value())
-        self.name=settings["preview_folder"] + "/" + "preview.tif"
-        item=0
-        if len(self.liststoreimport)>0:
-            self.ref=list(zip(*self.liststoreimport))[0] 
+        self.size = (self.spinbuttonlargeurprev.get_value(), self.spinbuttonhauteurprev.get_value())
+        self.name = os.path.join(settings["preview_folder"], "preview.tif")
+        item = 0
+        if len(self.liststoreimport) > 0:
+            self.ref = list(zip(*self.liststoreimport))[0] 
             for item2 in self.ref:
                 if item2:
-                    item+=1
+                    item +=1
                     if item>1:
                         self.update_align_options()
                         self.update_enfuse_options()
-                        self.thread_preview = Thread_Preview(self.taille, self.liststoreimport) 
+                        self.thread_preview = Thread_Preview(self.size, self.liststoreimport) 
                         self.thread_preview.start()
                         timer = GObject.timeout_add (100, self.pulsate)
                         break
@@ -661,10 +662,10 @@ class Interface:
         if not self.checkbuttonbloc.get_active():
             settings["fuse_settings"]["image_cacheblocksize"][1] = self.spinbuttonbloc.get_value_as_int()
 
-        if not self.checkbuttontaillefinale.get_active():
+        if not self.checkbuttonfinalsize.get_active():
             settings["fuse_settings"]["output_dimensions"] = [ "-f",
-                                                    str(self.spinbuttonlargeurfinale.get_value_as_int()) + 'x'
-                                                    + str(self.spinbuttonhauteurfinale.get_value_as_int()) + 'x'
+                                                    str(self.spinbuttonfinalwidth.get_value_as_int()) + 'x'
+                                                    + str(self.spinbuttonfinalheight.get_value_as_int()) + 'x'
                                                     + str(self.spinbuttonxoff.get_value_as_int()) + 'x'
                                                     + str(self.spinbuttonyoff.get_value_as_int())  ]
 
@@ -682,30 +683,30 @@ class Interface:
         else:
             self.progressbar.set_fraction(1)
             self.progressbar.set_text(_("Preview generated"))
-            self.imagepreview.set_from_file(settings["preview_folder"] + "/" + "preview.tif")
+            self.imagepreview.set_from_file(os.path.join(settings["preview_folder"], "preview.tif"))
             return False
 
     def baswitch(self, widget):
-        if (not int(self.buttonbeforeafter.get_relief())) and (os.path.exists(settings["preview_folder"] + "/preview_.tif")):
+        if (not int(self.buttonbeforeafter.get_relief())) and (os.path.exists(os.path.join(settings["preview_folder"], "preview_old.tif"))):
             self.buttonbeforeafter.props.relief = Gtk.ReliefStyle.NONE
-            self.imagepreview.set_from_file(settings["preview_folder"] + "/preview_.tif")
-        elif os.path.exists(settings["preview_folder"] + "/preview_.tif"):
+            self.imagepreview.set_from_file(os.path.join(settings["preview_folder"], "preview_old.tif"))
+        elif os.path.exists(os.path.join(settings["preview_folder"], "preview_old.tif")):
             self.buttonbeforeafter.props.relief = Gtk.ReliefStyle.NORMAL
-            self.imagepreview.set_from_file(settings["preview_folder"] + "/preview.tif")
+            self.imagepreview.set_from_file(os.path.join(settings["preview_folder"], "preview.tif"))
         
     def fusion(self,widget):
         if len(self.liststoreimport) <= 1:
             self.messageinthebottle(_("Please add or activate at least two images.\n\n Cannot do anything smart with the one or no image."))
             return
-        FenPar = SaveFiles_Dialog(self.win)
-        self.name = FenPar.get_name()
+        dialog = SaveFiles_Dialog(self.win)
+        self.name = dialog.get_name()
         if self.name:
             if not re.search('\\.jpeg$|\\.jpg$|\\.tiff$|\\.tif$', self.name, flags=re.IGNORECASE):
                 self.name += ".jpg"
             self.start('')
     
     def sendto(self, widget):
-        self.name = (settings["preview_folder"] + "/sendto.tif")
+        self.name = (os.path.join(settings["preview_folder"], "sendto.tif"))
         if not os.path.exists(self.name):
             self.messageinthebottle(_("Please add or activate at least two images.\n\n Cannot do anything smart with one or no image."))
             return
@@ -741,28 +742,28 @@ class Interface:
                
     def start(self, issend):        
         self.issend = issend
-        self.liste_images = []
-        self.liste_aligned = []
+        self.list_images = []
+        self.list_aligned = []
         index = 0
         for item in self.liststoreimport:
             if item[0]:
-               self.liste_images.append(item[1])
-               self.liste_aligned.append(settings["preview_folder"] + "/" + settings.align_prefix + format(index, "04d") + ".tif")
+               self.list_images.append(item[1])
+               self.list_aligned.append(os.path.join(settings["preview_folder"], settings["align_prefix"] + format(index, "04d") + ".tif"))
                index += 1
         if not Gui.checkbutton_a5_align.get_active():
-            self.liste_aligned=self.liste_images
-        if self.liste_images.count(self.name):
+            self.list_aligned=self.list_images
+        if self.list_images.count(self.name):
            self.messageinthebottle(_("Can't overwrite input image!\n\n Please change the output filename."))
            return -1                            
-        if len(self.liste_images) <= 1:
+        if len(self.list_images) <= 1:
             self.messageinthebottle(_("Please add or activate at least two images.\n\n Cannot do anything smart with the one or no image."))
             return -1
         self.update_align_options()
         self.update_enfuse_options()
-        ProFus = Progress_Fusion(self.liste_images, self.liste_aligned, self.issend)
+        ProFus = Progress_Fusion(self.name, self.list_images, self.list_aligned, self.issend)
         
     def apropos(self, widget):
-        self.fen = AproposFen(self.win)
+        dialog = Apropos_Dialog(self.win)
         
     def save_settings(self):
         conf = configparser.ConfigParser()
@@ -774,9 +775,9 @@ class Interface:
         conf.set('prefs', 'cachesize', str(self.spinbuttoncache.get_value_as_int()))
         conf.set('prefs', 'blocbutton', str(self.checkbuttonbloc.get_active()))
         conf.set('prefs', 'blocsize', str(self.spinbuttonbloc.get_value_as_int()))
-        conf.set('prefs', 'outsize', str(self.checkbuttontaillefinale.get_active()))
-        conf.set('prefs', 'outwidth', str(self.spinbuttonlargeurfinale.get_value_as_int()))
-        conf.set('prefs', 'outheight', str(self.spinbuttonhauteurfinale.get_value_as_int()))
+        conf.set('prefs', 'outsize', str(self.checkbuttonfinalsize.get_active()))
+        conf.set('prefs', 'outwidth', str(self.spinbuttonfinalwidth.get_value_as_int()))
+        conf.set('prefs', 'outheight', str(self.spinbuttonfinalheight.get_value_as_int()))
         conf.set('prefs', 'xoff', str(self.spinbuttonxoff.get_value_as_int()))
         conf.set('prefs', 'yoff', str(self.spinbuttonyoff.get_value_as_int()))
         conf.set('prefs', 'jpegdef', str(self.checkbuttonjpegorig.get_active()))
@@ -786,7 +787,7 @@ class Interface:
         conf.set('prefs', 'alignfiles', str(self.checkbuttonalignfiles.get_active()))
         conf.set('prefs', 'editor',  str(self.entryedit_field.get_text()))
         conf.set('prefs', 'default_folder', settings["default_folder"])
-        conf.write(open(settings["config_folder"]+ '/mfusion.cfg', 'w'))
+        conf.write(open(os.path.join(settings["config_folder"], 'mfusion.cfg'), 'w'))
         return
 
     def pixbuf2Image(self, pb):
@@ -907,20 +908,20 @@ class SaveFiles_Dialog:
 #####################################################################
             
 class Thread_Preview(threading.Thread):
-    def __init__(self, taille, liste):
+    def __init__(self, size, list):
         threading.Thread.__init__ (self)
-        self.taille = taille
-        self.liste = liste
+        self.size = size
+        self.list = list
             
     def run(self):
         images_a_fusionner = []
         images_a_align = []
         index = 0
-        for item in self.liste:
+        for item in self.list:
             if item[0]:
-                chemin_miniature = create_thumbnail(item[1],(int(self.taille[0]), int(self.taille[1])))
+                chemin_miniature = create_thumbnail(item[1],(int(self.size[0]), int(self.size[1])))
                 images_a_align.append(chemin_miniature)
-                images_a_fusionner.append(settings["preview_folder"] + "/test" + format(index, "04d") + ".tif")
+                images_a_fusionner.append(os.path.join(settings["preview_folder"], "test" + format(index, "04d") + ".tif"))
                 index += 1
         if (len(images_a_fusionner)) <= 1:
             Gui.messageinthebottle(_("Please add two or more images.\n\n Cannot do anything smart with the one image."))
@@ -928,14 +929,14 @@ class Thread_Preview(threading.Thread):
         if not Gui.checkbutton_a5_align.get_active():
             images_a_fusionner = images_a_align
         if Gui.checkbutton_a5_align.get_active():
-            command = ["align_image_stack", "-a", settings["preview_folder"] + "/test"] + data.get_align_options() + images_a_align
+            command = ["align_image_stack", "-a", os.path.join(settings["preview_folder"], "test")] + data.get_align_options() + images_a_align
             print(command)
             Gui.statusbar.push(15, _(":: Align photos..."))
             preview_process = subprocess.Popen(command, stdout=subprocess.PIPE)
             preview_process.wait()
             Gui.statusbar.pop(15)
         Gui.statusbar.push(15, _(":: Fusing photos..."))
-        command = [settings["enfuser"], "-o", settings["preview_folder"] + "/" + "preview.tif"] + data.get_enfuse_options() + images_a_fusionner
+        command = [settings["enfuser"], "-o", os.path.join(settings["preview_folder"], "preview.tif")] + data.get_enfuse_options() + images_a_fusionner
         print(command)
         preview_process = subprocess.Popen(command, stdout=subprocess.PIPE)
         preview_process.wait()
@@ -947,7 +948,7 @@ class Thread_Preview(threading.Thread):
 #######################################################################
         
 class Progress_Fusion:
-    def __init__(self, liste, liste_aligned, issend):
+    def __init__(self, name, list, list_aligned, issend):
         
         #self.progress = Gtk.glade.XML(fname=UI + "progress.xml", domain=APP)
         self.progress = Gtk.Builder()
@@ -962,7 +963,7 @@ class Progress_Fusion:
         self.progress.connect_signals(self.dic1)        
         self.info_label.set_text(_('Fusion images...'))
        
-        self.thread_fusion = Thread_Fusion(liste, liste_aligned, issend)  #On prepare le thread qui va faire tout le boulot
+        self.thread_fusion = Thread_Fusion(name, list, list_aligned, issend)  #On prepare le thread qui va faire tout le boulot
         self.thread_fusion.start()                                     #On le lance
         timer = GObject.timeout_add (100, self.pulsate)
         
@@ -987,29 +988,31 @@ class Progress_Fusion:
 ##############################################################################
 
 class Thread_Fusion(threading.Thread):
-    def __init__(self, command_fuse, command_align, liste, liste_aligned, issend):
+    def __init__(self, name, list, list_aligned, issend):
         threading.Thread.__init__ (self)
-        self.command_fuse  = [settings["enfuser"], "-o", self.name] + data.get_align_options() + self.liste_aligned
-        self.command_align = ["align_image_stack", '-a', settings["preview_folder"] + '/' + settings.align_prefix] + data.get_align_options() + self.liste_images
         self.issend = issend
-        self.liste  = liste
-        self.liste_aligned = liste_aligned
+        self.name = name
+        self.list = list
+        self.list_aligned = list_aligned
+        self.command_fuse  = [settings["enfuser"], "-o", self.name] + data.get_enfuse_options() + self.list_aligned
+        self.command_align = ["align_image_stack", '-a', os.path.join(settings["preview_folder"], settings["align_prefix"])] + data.get_align_options() + self.list
+
         
     def run(self):
         if Gui.checkbutton_a5_align.get_active():       
-            print(command)     
+            print(self.command_align)     
             align_process = subprocess.Popen(self.command_align, stdout=subprocess.PIPE)
             align_process.wait()
         
             if Gui.checkbuttonalignfiles.get_active():
                 # copy aligned files in working folder for further processing by user:
                 count = 0
-                for file in self.liste:
-                    tmp_filename    = self.liste_aligned[count] #settings.align_prefix+str(count).zfill(4)+".tif"
-                    (path, file_)   = os.path.split(file)
-                    (filename, ext) = os.path.splitext(file_)
-                    new_filename    = settings["preview_folder"] + "/" + filename + "_" + settings.align_prefix + ".tif"
-                    new_filename_dst = path + "/" + filename + "_" + settings.align_prefix + ".tif"
+                for file in self.list:
+                    tmp_filename     = self.list_aligned[count] #settings["align_prefix"]+str(count).zfill(4)+".tif"
+                    (path, file_)    = os.path.split(file)
+                    (filename, ext)  = os.path.splitext(file_)
+                    new_filename     = os.path.join(settings["preview_folder"], filename + "_" + settings["align_prefix"] + ".tif")
+                    new_filename_dst = os.path.join(path, filename + "_" + settings["align_prefix"] + ".tif")
                     if os.path.exists(new_filename):
                         os.remove(new_filename)
                     shutil.copy(tmp_filename, new_filename)
@@ -1024,12 +1027,12 @@ class Thread_Fusion(threading.Thread):
                     shutil.move(new_filename, new_filename_dst)
                     count += 1
 
-        print(command)
+        print(self.command_fuse)
         fusion_process = subprocess.Popen(self.command_fuse, stdout=subprocess.PIPE)
         fusion_process.wait()
         
         if Gui.checkbuttonexif.get_active():
-            exif_copy = subprocess.Popen(["exiftool", "-tagsFromFile", Gui.liste_images[0], "-overwrite_original", Gui.name])
+            exif_copy = subprocess.Popen(["exiftool", "-tagsFromFile", Gui.list_images[0], "-overwrite_original", Gui.name])
             exif_copy.wait()
         if len(self.issend) > 0:
             subprocess.Popen([Gui.entryedit_field.get_text(), self.issend], stdout=subprocess.PIPE)
@@ -1039,7 +1042,7 @@ class Thread_Fusion(threading.Thread):
 #### Classe de la fenêtre a propos  ####
 ########################################  
 
-class AproposFen:
+class Apropos_Dialog:
     def __init__(self, parent):
         self.aboutdialog = Gtk.AboutDialog("About", parent)
         self.aboutdialog.set_name("MacroFusion")
