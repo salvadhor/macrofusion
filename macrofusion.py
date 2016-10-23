@@ -573,6 +573,7 @@ class Interface:
         (path, file) = os.path.split(files[0])
         (filename, ext) = os.path.splitext(file)
         settings["default_file"] = filename+"-fused"+ext
+        settings["default_folder"] = path
         self.put_files_to_the_list(files)
         
     def add(self, widget):
