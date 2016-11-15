@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.16.1 -->
+<!-- Generated with glade 3.18.3 -->
 <interface>
   <requires lib="gtk+" version="3.0"/>
   <object class="GtkAdjustment" id="adjustment1">
@@ -16,7 +16,7 @@
   </object>
   <object class="GtkAdjustment" id="adjustment11">
     <property name="upper">29</property>
-    <property name="value">9</property>
+    <property name="value">29</property>
     <property name="step_increment">1</property>
     <property name="page_increment">29</property>
   </object>
@@ -174,6 +174,9 @@
       <row>
         <col id="0" translatable="yes">Luminance</col>
       </row>
+      <row>
+        <col id="0" translatable="yes">PL-Star</col>
+      </row>
     </data>
   </object>
   <object class="GtkListStore" id="model2">
@@ -233,7 +236,7 @@
                             <property name="orientation">vertical</property>
                             <property name="layout_style">start</property>
                             <child>
-                              <object class="GtkButton" id="buttonajoutfichiers">
+                              <object class="GtkButton" id="buttonaddfile">
                                 <property name="label">gtk-add</property>
                                 <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
@@ -242,7 +245,7 @@
                                 <property name="border_width">4</property>
                                 <property name="use_stock">True</property>
                                 <property name="image_position">top</property>
-                                <signal name="clicked" handler="on_buttonajoutfichiers_clicked" swapped="no"/>
+                                <signal name="clicked" handler="on_buttonaddfile_clicked" swapped="no"/>
                                 <accelerator key="a" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                               </object>
                               <packing>
@@ -252,7 +255,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkButton" id="buttonenleverfichier">
+                              <object class="GtkButton" id="buttondelfile">
                                 <property name="label">gtk-remove</property>
                                 <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
@@ -261,13 +264,32 @@
                                 <property name="border_width">4</property>
                                 <property name="use_stock">True</property>
                                 <property name="image_position">top</property>
-                                <signal name="clicked" handler="on_buttonenleverfichier_clicked" swapped="no"/>
-                                <accelerator key="w" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                                <signal name="clicked" handler="on_buttondelfile_clicked" swapped="no"/>
+                                <accelerator key="r" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
                                 <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="buttonclear">
+                                <property name="label">gtk-clear</property>
+                                <property name="use_action_appearance">False</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="receives_default">True</property>
+                                <property name="border_width">4</property>
+                                <property name="use_stock">True</property>
+                                <property name="image_position">top</property>
+                                <signal name="clicked" handler="on_buttonclear_clicked" swapped="no"/>
+                                <accelerator key="c" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">2</property>
                               </packing>
                             </child>
                           </object>
@@ -291,7 +313,7 @@
                     <child>
                       <object class="GtkScrolledWindow" id="scrolledwindow1">
                         <property name="width_request">320</property>
-                        <property name="height_request">200</property>
+                        <property name="height_request">400</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="margin_right">4</property>
@@ -299,7 +321,7 @@
                         <property name="hscrollbar_policy">never</property>
                         <property name="shadow_type">etched-in</property>
                         <child>
-                          <object class="GtkTreeView" id="listeimages">
+                          <object class="GtkTreeView" id="listimages">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="headers_clickable">False</property>
@@ -361,8 +383,8 @@
                                           <object class="GtkLabel" id="label10">
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
-                                            <property name="xalign">0</property>
                                             <property name="label" translatable="yes">Exposure (default: 1)</property>
+                                            <property name="xalign">0</property>
                                           </object>
                                           <packing>
                                             <property name="expand">False</property>
@@ -427,8 +449,8 @@ weight given to well-exposed pixels
                                           <object class="GtkLabel" id="label11">
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
-                                            <property name="xalign">0</property>
                                             <property name="label" translatable="yes">Contrast (default: 0)</property>
+                                            <property name="xalign">0</property>
                                           </object>
                                           <packing>
                                             <property name="expand">False</property>
@@ -492,8 +514,8 @@ weight given to pixels in high-contrast neighborhoods
                                           <object class="GtkLabel" id="label12">
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
-                                            <property name="xalign">0</property>
                                             <property name="label" translatable="yes">Saturation (default: 0.2)</property>
+                                            <property name="xalign">0</property>
                                           </object>
                                           <packing>
                                             <property name="expand">False</property>
@@ -557,8 +579,8 @@ weight given to highly-saturated pixels
                                           <object class="GtkLabel" id="label13">
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
-                                            <property name="xalign">0</property>
                                             <property name="label" translatable="yes">Mean exposure (default: 0.5)</property>
+                                            <property name="xalign">0</property>
                                           </object>
                                           <packing>
                                             <property name="expand">False</property>
@@ -622,8 +644,8 @@ center also known as MEAN of Gaussian weighting
                                           <object class="GtkLabel" id="label14">
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
-                                            <property name="xalign">0</property>
                                             <property name="label" translatable="yes">Deviation (default: 0.2)</property>
+                                            <property name="xalign">0</property>
                                           </object>
                                           <packing>
                                             <property name="expand">False</property>
@@ -731,6 +753,7 @@ Auto align images.
 </property>
                                             <property name="xalign">0.5</property>
                                             <property name="draw_indicator">True</property>
+                                            <signal name="toggled" handler="on_checkbutton_a5_align_toggled" swapped="no"/>
                                           </object>
                                           <packing>
                                             <property name="expand">True</property>
@@ -863,6 +886,7 @@ Useful for aligning focus stacks with slightly different magnification.
 number of blending LEVELS to use
 					    </property>
                                             <property name="xalign">0.5</property>
+                                            <property name="active">True</property>
                                             <property name="draw_indicator">True</property>
                                           </object>
                                           <packing>
@@ -1639,8 +1663,8 @@ or contrast weighing, where OPERATOR is one of
                                             <property name="margin_left">4</property>
                                             <property name="margin_right">4</property>
                                             <property name="margin_top">4</property>
-                                            <property name="xalign">0</property>
                                             <property name="label" translatable="yes">Cache Size:</property>
+                                            <property name="xalign">0</property>
                                           </object>
                                           <packing>
                                             <property name="expand">False</property>
@@ -1714,8 +1738,8 @@ or contrast weighing, where OPERATOR is one of
                                             <property name="margin_left">4</property>
                                             <property name="margin_right">4</property>
                                             <property name="margin_top">4</property>
-                                            <property name="xalign">0</property>
                                             <property name="label" translatable="yes">Bloc Size: </property>
+                                            <property name="xalign">0</property>
                                           </object>
                                           <packing>
                                             <property name="expand">False</property>
@@ -1793,8 +1817,8 @@ or contrast weighing, where OPERATOR is one of
                                               <object class="GtkLabel" id="label18">
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">False</property>
-                                                <property name="xalign">0</property>
                                                 <property name="label" translatable="yes">Final image size:</property>
+                                                <property name="xalign">0</property>
                                               </object>
                                               <packing>
                                                 <property name="expand">False</property>
@@ -1803,7 +1827,7 @@ or contrast weighing, where OPERATOR is one of
                                               </packing>
                                             </child>
                                             <child>
-                                              <object class="GtkCheckButton" id="checkbuttontaillefinale">
+                                              <object class="GtkCheckButton" id="checkbuttonfinalsize">
                                                 <property name="label" translatable="yes">Default</property>
                                                 <property name="use_action_appearance">False</property>
                                                 <property name="visible">True</property>
@@ -1842,7 +1866,7 @@ or contrast weighing, where OPERATOR is one of
                                                 <property name="can_focus">False</property>
                                                 <property name="orientation">vertical</property>
                                                 <child>
-                                                  <object class="GtkSpinButton" id="spinbuttonlargeurfinale">
+                                                  <object class="GtkSpinButton" id="spinbuttonfinalwidth">
                                                     <property name="visible">True</property>
                                                     <property name="can_focus">True</property>
                                                     <property name="invisible_char">•</property>
@@ -1883,7 +1907,7 @@ or contrast weighing, where OPERATOR is one of
                                                 <property name="can_focus">False</property>
                                                 <property name="orientation">vertical</property>
                                                 <child>
-                                                  <object class="GtkSpinButton" id="spinbuttonhauteurfinale">
+                                                  <object class="GtkSpinButton" id="spinbuttonfinalheight">
                                                     <property name="visible">True</property>
                                                     <property name="can_focus">True</property>
                                                     <property name="invisible_char">•</property>
@@ -2060,7 +2084,7 @@ or contrast weighing, where OPERATOR is one of
                                                 <property name="width_chars">3</property>
                                                 <property name="adjustment">adjustment26</property>
                                                 <property name="climb_rate">1</property>
-                                                <property name="value">85</property>
+                                                <property name="value">100</property>
                                               </object>
                                               <packing>
                                                 <property name="expand">False</property>
@@ -2191,9 +2215,57 @@ Enter name of graphics editor to edit images
                                           </packing>
                                         </child>
                                         <child>
-                                          <object class="GtkHSeparator" id="hseparator_e_1">
+                                          <object class="GtkBox" id="box3">
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
+                                            <property name="spacing">1</property>
+                                            <child>
+                                              <object class="GtkCheckButton" id="checkbuttonexif">
+                                                <property name="label" translatable="yes">Copy exif info ?</property>
+                                                <property name="use_action_appearance">False</property>
+                                                <property name="visible">True</property>
+                                                <property name="can_focus">True</property>
+                                                <property name="receives_default">False</property>
+                                                <property name="margin_top">4</property>
+                                                <property name="margin_bottom">4</property>
+                                                <property name="xalign">0</property>
+                                                <property name="draw_indicator">True</property>
+                                              </object>
+                                              <packing>
+                                                <property name="expand">True</property>
+                                                <property name="fill">True</property>
+                                                <property name="position">0</property>
+                                              </packing>
+                                            </child>
+                                            <child>
+                                              <object class="GtkCheckButton" id="checkbuttonalignfiles">
+                                                <property name="label" translatable="yes">Create aligned files in folder?</property>
+                                                <property name="use_action_appearance">False</property>
+                                                <property name="visible">True</property>
+                                                <property name="can_focus">True</property>
+                                                <property name="receives_default">False</property>
+                                                <property name="margin_top">4</property>
+                                                <property name="margin_bottom">4</property>
+                                                <property name="xalign">0</property>
+                                                <property name="draw_indicator">True</property>
+                                              </object>
+                                              <packing>
+                                                <property name="expand">True</property>
+                                                <property name="fill">True</property>
+                                                <property name="position">1</property>
+                                              </packing>
+                                            </child>
+                                            <child>
+                                              <object class="GtkSeparator" id="separator1">
+                                                <property name="visible">True</property>
+                                                <property name="can_focus">False</property>
+                                              </object>
+                                              <packing>
+                                                <property name="expand">False</property>
+                                                <property name="fill">True</property>
+                                                <property name="position">2</property>
+                                              </packing>
+                                            </child>
                                           </object>
                                           <packing>
                                             <property name="expand">False</property>
@@ -2202,24 +2274,7 @@ Enter name of graphics editor to edit images
                                           </packing>
                                         </child>
                                         <child>
-                                          <object class="GtkCheckButton" id="checkbuttonexif">
-                                            <property name="label" translatable="yes">Copy exif info ?</property>
-                                            <property name="use_action_appearance">False</property>
-                                            <property name="visible">True</property>
-                                            <property name="can_focus">False</property>
-                                            <property name="receives_default">False</property>
-                                            <property name="margin_left">4</property>
-                                            <property name="margin_right">4</property>
-                                            <property name="margin_top">4</property>
-                                            <property name="margin_bottom">4</property>
-                                            <property name="xalign">0.5</property>
-                                            <property name="draw_indicator">True</property>
-                                          </object>
-                                          <packing>
-                                            <property name="expand">False</property>
-                                            <property name="fill">True</property>
-                                            <property name="position">18</property>
-                                          </packing>
+                                          <placeholder/>
                                         </child>
                                       </object>
                                     </child>
@@ -2344,14 +2399,14 @@ Enter name of graphics editor to edit images
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkButton" id="buttonannuler">
+                              <object class="GtkButton" id="buttoncancel">
                                 <property name="label">gtk-quit</property>
                                 <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
                                 <property name="use_stock">True</property>
-                                <signal name="clicked" handler="on_buttonannuler_clicked" swapped="no"/>
+                                <signal name="clicked" handler="on_buttoncancel_clicked" swapped="no"/>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -2450,7 +2505,7 @@ Enter name of graphics editor to edit images
                         <property name="resize_mode">immediate</property>
                         <child>
                           <object class="GtkImage" id="imagepreview">
-                            <property name="width_request">680</property>
+                            <property name="width_request">1024</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="stock">gtk-missing-image</property>
