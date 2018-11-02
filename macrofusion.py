@@ -120,9 +120,9 @@ settings = {
         # weight given to pixels in high-contrast neighborhoods
         "contrast-weight"       : ["--contrast-weight",         0.0],
         # mean of Gaussian weighting function
-        "exposure-mu"           : ["--exposure-mu",             0.5],
+        "exposure-mu"           : ["--exposure-optimum",        0.5],
         # standard deviation of Gaussian weighting function 
-        "exposure-sigma"        : ["--exposure-sigma",          0.2],
+        "exposure-sigma"        : ["--exposure-width",          0.2],
         # limit number of blending LEVELS to use (1 to 29)
         "levels"                : ["--levels",                  29],
         # average over all masks; this is the default
@@ -146,10 +146,6 @@ settings = {
         #"save-masks"            : ["--save-masks", "%f-softmask-%n.png:%f-hardmask-%n.png"],
         # load masks from files
         #"load-masks"            : ["--load-masks", "%f-softmask-%n.png:%f-hardmask-%n.png"],
-        # image CACHESIZE in megabytes; default: 1024MB
-        "image_cachesize"       : ["-m",                        4096],
-        # image cache BLOCKSIZE in kilobytes; default: 2048KB
-        "image_cacheblocksize"  : ["-b",                        4096],
         # Misc arguments
         "misc_args"             : ["",                          False]
     }
@@ -656,12 +652,6 @@ class Interface:
 
         if self.check_desatmeth.get_active():
             settings["fuse_settings"]["gray-projector"][1] = self.combobox_desatmet.get_active()
-
-        if not self.checkbuttoncache.get_active():
-            settings["fuse_settings"]["image_cachesize"][1] = self.spinbuttoncache.get_value_as_int()
-
-        if not self.checkbuttonbloc.get_active():
-            settings["fuse_settings"]["image_cacheblocksize"][1] = self.spinbuttonbloc.get_value_as_int()
 
         if not self.checkbuttonfinalsize.get_active():
             settings["fuse_settings"]["output_dimensions"] = [ "-f",
