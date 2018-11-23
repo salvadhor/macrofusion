@@ -11,8 +11,6 @@ conflict with another EnfuseGui (for MacOS).
 
 GNU GPL.
 
-(c) Dariusz Duma <dhor@toxic.net.pl>
-
 
 
 Install
