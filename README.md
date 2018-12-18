@@ -1,23 +1,20 @@
 About
 -------
 
-MacroFusion is a neat little GUI for great tool Enfuse
-(command line). It makes easy fusion few photos to one with great
-DOF (Deep of Field) or DR (Dynamic Range). It can be useful for every macro
-lovers or landscapers. 
+MacroFusion is a neat little GUI for the great tool `Enfuse`
+(command line). It makes it easy to fuse many photos to one with great
+DOF (Depth of Field) or DR (Dynamic Range). Useful for every macro
+lover or landscaper.
 
 MacroFusion is a fork of EnfuseGui of Chez Gholyo. Rebranding is due to
 conflict with another EnfuseGui (for MacOS).
 
-GNU GPL.
+This program is free software under the terms of GNU GPLv3.
 
 
 
-Install
+Dependencies:
 ---------
-
-You need:
-
 - python (>=3)
 - Pillow (fork of PIL) (python3-imaging)
 - gexiv2 (gir1.2-gexiv2)
@@ -25,11 +22,13 @@ You need:
 - enfuse (>=4.0)
 - hugin-tools (with align_image_stack)
 
-Local (archive .tar.gz):
+Local install (archive .tar.gz):
 ------
-Unpack, go to the directory 'macrofusion-0.X', run ./macrofusion.py
+- Unpack
+- Go to the directory `macrofusion-0.X`
+- Run `./macrofusion.py`
 
-System wide:
+System wide install:
 -------
 Use PPA or .deb packages (the only packages so far).
 
@@ -45,21 +44,21 @@ Mint and Debian users also can use that .deb.
 Translations
 --------------
 
-To translate MicroFusion, use microfusion.pot (original strings) and Poeditor (or any utility
-you like). Import strings from .pot file and save them as .po.
+To translate MacroFusion, use macrofusion.pot (original strings)
+and POEditor (or any utility you like).
+Import strings from .pot file and save them as .po.
 Send it to me after you've done - thanks in advance.
 
 
-Question and answers
+Questions and answers
 ---------------------
 
-Q: Who needs ugly GUI for great command-line tool? 
+Q: Who needs ugly GUI for great command-line tool?  
 A: Users that use Linux on a daily basis.
 
-Q: Enfuse in text mode is very simply to use.
-A: That's right. But we have XXI century - time to use mouse.
+Q: Enfuse in text mode is very simply to use.  
+A: That's right. But we are in the XXI century - time to use mouse.
 
-Q: What a stupid idea - put photos together. Who cares.
+Q: What a stupid idea - put photos together. Who cares.  
 A: That's right, but the other platforms have tools to do that, so why don't do
-   that on Linux? Photographers care.
-
+that on Linux? Photographers care.
