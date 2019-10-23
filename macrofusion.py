@@ -34,8 +34,9 @@ try:
     require_version('GExiv2', '0.10')
     from gi.repository import Gdk, Gtk, GObject, GdkPixbuf, GExiv2
 
-except:    
+except Exception as e:    
     print('An error occured. Python or one of its sub modules is absent...\nIt would be wise to check your python installation.')
+    print(e)
     sys.exit(1)    
 
 try:
