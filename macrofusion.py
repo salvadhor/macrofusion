@@ -570,10 +570,6 @@ class Interface:
         files = [os.path.normpath(x.lstrip("file:")) for x in files]
         # get rid of 'file:' and replace %xx escapes
         files = [urllib.parse.unquote(x) for x in files]
-        (path, file) = os.path.split(files[0])
-        (filename, ext) = os.path.splitext(file)
-        settings["default_file"] = filename+"-fused"+ext
-        settings["default_folder"] = path
         self.put_files_to_the_list(files)
         
     def add(self, widget):
@@ -793,6 +789,11 @@ class Interface:
         self.files = files
         self.tags2 = ''
         self.badfiles = []
+        # TODO: check if resolution of files match!
+        (path, file) = os.path.split(files[0])
+        (filename, ext) = os.path.splitext(file)
+        settings["default_file"] = filename+"-fused"+ext
+        settings["default_folder"] = path
         for file in self.files:
             if re.search('\\.jpg$|\\.jpeg$|\\.tiff$|\\.tif$', file, flags=re.IGNORECASE):
                 pb = GdkPixbuf.Pixbuf.new_from_file(file)
@@ -841,10 +842,6 @@ class OpenFiles_Dialog:
             self.files = self.file_dialog.get_filenames()
             self.tags2 = ''
             self.badfiles = []
-            # TODO: check if resolution of files match!
-            (path, file) = os.path.split(self.files[0])
-            (filename, ext) = os.path.splitext(file)
-            settings["default_file"] = filename+"-fused"+ext
             Gui.put_files_to_the_list(self.files)
 
         settings["default_folder"] = self.file_dialog.get_current_folder()
