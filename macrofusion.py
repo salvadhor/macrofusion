@@ -922,14 +922,14 @@ class Thread_Preview(threading.Thread):
             images_a_fusionner = images_a_align
         if Gui.checkbutton_a5_align.get_active():
             command = ["align_image_stack", "-a", os.path.join(settings["preview_folder"], "test")] + data.get_align_options() + images_a_align
-            print(command)
+            print(" ".join(command))
             Gui.statusbar.push(15, _(":: Align photos..."))
             preview_process = subprocess.Popen(command, stdout=subprocess.PIPE)
             preview_process.wait()
             Gui.statusbar.pop(15)
         Gui.statusbar.push(15, _(":: Fusing photos..."))
         command = [settings["enfuser"], "-o", os.path.join(settings["preview_folder"], "preview.tif")] + data.get_enfuse_options() + images_a_fusionner
-        print(command)
+        print(" ".join(command))
         preview_process = subprocess.Popen(command, stdout=subprocess.PIPE)
         preview_process.wait()
         Gui.statusbar.pop(15)
@@ -992,7 +992,7 @@ class Thread_Fusion(threading.Thread):
         
     def run(self):
         if Gui.checkbutton_a5_align.get_active():       
-            print(self.command_align)     
+            print(" ".join(self.command_align))
             align_process = subprocess.Popen(self.command_align, stdout=subprocess.PIPE)
             align_process.wait()
         
@@ -1019,7 +1019,7 @@ class Thread_Fusion(threading.Thread):
                     shutil.move(new_filename, new_filename_dst)
                     count += 1
 
-        print(self.command_fuse)
+        print(" ".join(self.command_fuse))
         fusion_process = subprocess.Popen(self.command_fuse, stdout=subprocess.PIPE)
         fusion_process.wait()
         
