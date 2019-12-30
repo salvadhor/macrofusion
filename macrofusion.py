@@ -103,8 +103,10 @@ settings = {
         "use_gpu"               : ["--gpu",     True],
         # Correlation threshold for identifying control points (default: 0.9).
         "corr_thres"            : ["--corr",    0.6],
+        # Optimize radial distortion for all images, except for first.
+        "opt_radial_dist"       : ["-d",        True],
         # Number of control points (per grid, see option -g) to create between adjacent images (default: 8).  
-        "num_ctrl_pnt"          : ["-c",        20],
+        "num_ctrl_pnt"          : ["-c",        40],
         # Scale down image by 2^scale (default: 1). Scaling down images will improve speed at the cost of accuracy.
         "scale_down"            : ["-s",        0],
         # Misc arguments
@@ -198,7 +200,8 @@ class data:
         options = []
         for key, value in settings["align_settings"].items():
             # special treatment for boolean values
-            if (key == "auto_crop" or key == "opt_img_shift" or key == "opt_fov" or key == "use_gpu" or key == "misc_args"):
+            if (key == "auto_crop" or key == "opt_img_shift" or key == "opt_fov" or key == "use_gpu" or \
+                key == "misc_args" or key == "opt_radial_dist"):
                 if value[1]:
                     options.append(value[0])
             else:
