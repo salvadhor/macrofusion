@@ -70,8 +70,6 @@ locale.bindtextdomain(APP, DIR)
 locale.textdomain(APP)
 
 
-GObject.threads_init()
-
 
 
 ####################################################
@@ -277,7 +275,7 @@ class Interface:
         self.statusbar.push(1,(_("CPU Cores: %s") % settings["cpus"]))
 
         self.hscaleexp = self.gui.get_object("hscaleexp")
-        self.ajus_exp = Gtk.Adjustment(value=1, lower=0, upper=1, step_incr=0.1, page_incr=0.1, page_size=0)
+        self.ajus_exp = Gtk.Adjustment(value=1, lower=0, upper=1, step_increment=0.1, page_increment=0.1, page_size=0)
         self.hscaleexp.set_adjustment(self.ajus_exp)
         self.spinbuttonexp = self.gui.get_object("spinbuttonexp")
         self.spinbuttonexp.set_digits(1)
@@ -285,7 +283,7 @@ class Interface:
         self.spinbuttonexp.set_adjustment(self.ajus_exp)
         
         self.hscalecont = self.gui.get_object("hscalecont")
-        self.ajus_cont = Gtk.Adjustment(value=0, lower=0, upper=1, step_incr=0.1, page_incr=0.1, page_size=0)
+        self.ajus_cont = Gtk.Adjustment(value=0, lower=0, upper=1, step_increment=0.1, page_increment=0.1, page_size=0)
         self.hscalecont.set_adjustment(self.ajus_cont)
         self.spinbuttoncont = self.gui.get_object("spinbuttoncont")
         self.spinbuttoncont.set_digits(1)
@@ -293,7 +291,7 @@ class Interface:
         self.spinbuttoncont.set_adjustment(self.ajus_cont)
         
         self.hscalesat = self.gui.get_object("hscalesat")
-        self.ajus_sat = Gtk.Adjustment(value=0.2, lower=0, upper=1, step_incr=0.1, page_incr=0.1, page_size=0)
+        self.ajus_sat = Gtk.Adjustment(value=0.2, lower=0, upper=1, step_increment=0.1, page_increment=0.1, page_size=0)
         self.hscalesat.set_adjustment(self.ajus_sat)
         self.spinbuttonsat = self.gui.get_object("spinbuttonsat")
         self.spinbuttonsat.set_digits(1)
@@ -301,7 +299,7 @@ class Interface:
         self.spinbuttonsat.set_adjustment(self.ajus_sat)
         
         self.hscalemu = self.gui.get_object("hscalemu")
-        self.ajus_mu = Gtk.Adjustment(value=0.5, lower=0, upper=1, step_incr=0.01, page_incr=0.1, page_size=0)
+        self.ajus_mu = Gtk.Adjustment(value=0.5, lower=0, upper=1, step_increment=0.01, page_increment=0.1, page_size=0)
         self.hscalemu.set_adjustment(self.ajus_mu)
         self.spinbuttonmu = self.gui.get_object("spinbuttonmu")
         self.spinbuttonmu.set_digits(2)
@@ -309,7 +307,7 @@ class Interface:
         self.spinbuttonmu.set_adjustment(self.ajus_mu)
         
         self.hscalesigma = self.gui.get_object("hscalesigma")
-        self.ajus_sigma = Gtk.Adjustment(value=0.2, lower=0, upper=1, step_incr=0.01, page_incr=0.1, page_size=0)
+        self.ajus_sigma = Gtk.Adjustment(value=0.2, lower=0, upper=1, step_increment=0.01, page_increment=0.1, page_size=0)
         self.hscalesigma.set_adjustment(self.ajus_sigma)
         self.spinbuttonsigma = self.gui.get_object("spinbuttonsigma")
         self.spinbuttonsigma.set_digits(2)
@@ -317,11 +315,11 @@ class Interface:
         self.spinbuttonsigma.set_adjustment(self.ajus_sigma)
 
         self.spinbuttonlargeurprev = self.gui.get_object("spinbuttonlargeurprev")
-        self.ajus_largeup = Gtk.Adjustment(value=640, lower=128, upper=1280, step_incr=1, page_incr=1, page_size=0)
+        self.ajus_largeup = Gtk.Adjustment(value=640, lower=128, upper=1280, step_increment=1, page_increment=1, page_size=0)
         self.spinbuttonlargeurprev.set_adjustment(self.ajus_largeup)
 
         self.spinbuttonhauteurprev = self.gui.get_object("spinbuttonhauteurprev")
-        self.ajus_hauteup = Gtk.Adjustment(value=640, lower=128, upper=1280, step_incr=1, page_incr=1, page_size=0)
+        self.ajus_hauteup = Gtk.Adjustment(value=640, lower=128, upper=1280, step_increment=1, page_increment=1, page_size=0)
         self.spinbuttonhauteurprev.set_adjustment(self.ajus_hauteup)
         
         self.buttonpreview = self.gui.get_object("buttonpreview")
@@ -557,7 +555,6 @@ class Interface:
         self.colonneimages2.add_attribute(self.cell2, 'pixbuf', 2)
         self.cell2.set_property('visible', 1)
         
-        self.listimages.set_rules_hint(True)
         self.select.connect("toggled", toggled_cb, (self.liststoreimport, 0))   #Pour que les boutons de selection marchent
 
         # enable drag and drop destination for files
@@ -708,7 +705,8 @@ class Interface:
             return
         
     def messageinthebottle(self, message):
-        self.messaga = Gtk.MessageDialog(parent=self.win, flags=Gtk.DialogFlags.MODAL, type=Gtk.MessageType.INFO, buttons=Gtk.ButtonsType.OK, message_format=(message))
+        self.messaga = Gtk.MessageDialog(parent=self.win, modal=True,
+                                         message_type=Gtk.MessageType.INFO, buttons=Gtk.ButtonsType.OK, text=(message))
         if self.messaga.run() == Gtk.ResponseType.OK:
             self.messaga.destroy()
 
@@ -824,12 +822,10 @@ class OpenFiles_Dialog:
         self.filter = Gtk.FileFilter()
         self.filter.add_mime_type("image/jpeg")
         self.filter.add_mime_type("image/tiff")
-        self.liststoreimport = model #on repart de l'ancien modele
-
-        self.file_dialog = Gtk.FileChooserDialog(_("Add images..."), 
-                                                    parent, 
-                                                    Gtk.FileChooserAction.OPEN,
-                                                    (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,Gtk.STOCK_OK, Gtk.ResponseType.OK))
+        self.liststoreimport = model 
+        self.file_dialog = Gtk.FileChooserDialog(title=_("Add images..."),
+                                                parent=parent, action=Gtk.FileChooserAction.OPEN)
+        self.file_dialog.add_buttons(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OK, Gtk.ResponseType.OK)
         self.file_dialog.set_select_multiple(True)
         self.file_dialog.set_current_folder(settings["default_folder"])
         self.file_dialog.set_filter(self.filter)
@@ -876,10 +872,9 @@ class SaveFiles_Dialog:
     """La classe qui ouvre la fenetre de choix pour enregistrer le fichier"""          
     def __init__(self, parent):
         
-        self.file_dialog = Gtk.FileChooserDialog(_("Save file..."), 
-                                                   parent, 
-                                                   Gtk.FileChooserAction.SAVE,
-                                                   (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_SAVE, Gtk.ResponseType.OK))
+        self.file_dialog = Gtk.FileChooserDialog(title=_("Save file..."), 
+                                                 parent=parent, action=Gtk.FileChooserAction.SAVE)
+        self.file_dialog.add_buttons(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_SAVE, Gtk.ResponseType.OK)
         self.file_dialog.set_current_folder(settings["default_folder"])
         self.file_dialog.set_current_name(settings["default_file"])
         self.file_dialog.set_do_overwrite_confirmation(True)
@@ -941,8 +936,6 @@ class Thread_Preview(threading.Thread):
         
 class Progress_Fusion:
     def __init__(self, name, list, list_aligned, issend):
-        
-        #self.progress = Gtk.glade.XML(fname=UI + "progress.xml", domain=APP)
         self.progress = Gtk.Builder()
         self.progress.add_from_file(UI + "progress.xml") 
         self.progress_win = self.progress.get_object("dialog1")
@@ -953,17 +946,17 @@ class Progress_Fusion:
         self.dic1 = { "on_stop_button_clicked"  : self.close_progress, 
                       "on_dialog1_destroy"      : self.close_progress }
         self.progress.connect_signals(self.dic1)        
-        self.info_label.set_text(_('Fusion images...'))
+        self.info_label.set_text(_('Fusing images...'))
        
-        self.thread_fusion = Thread_Fusion(name, list, list_aligned, issend)  #On prepare le thread qui va faire tout le boulot
-        self.thread_fusion.start()                                     #On le lance
+        self.thread_fusion = Thread_Fusion(name, list, list_aligned, issend)
+        self.thread_fusion.start()
         timer = GObject.timeout_add (100, self.pulsate)
         
     def pulsate(self):
-        if self.thread_fusion.isAlive():            #Tant que le thread est en cours, 
-            self.progress_bar.set_text(_("Fusion, please wait..."))
-            self.progress_bar.pulse()               #on fait pulser la barre
-            return True                             #et on renvoie True pour que gobject.timeout recommence
+        if self.thread_fusion.is_alive():
+            self.progress_bar.set_text(_("Fusing images, please wait..."))
+            self.progress_bar.pulse()
+            return True
         else:
             self.progress_bar.set_fraction(1)
             self.progress_bar.set_text(_("Fused !"))
