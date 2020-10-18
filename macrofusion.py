@@ -9,7 +9,6 @@ __COPYRIGHT__   ='Dariusz Duma'
 __WEBSITE__     ='http://sourceforge.net/p/macrofusion'
 
 try:
-
     import os, sys
     import os.path
     import subprocess
@@ -26,13 +25,12 @@ try:
     import signal
     import tempfile
     import locale
-
-
     from gi import require_version
     require_version('Gtk', '3.0')
+    require_version('GLib', '2.0')
     require_version('Gdk', '3.0')
     require_version('GExiv2', '0.10')
-    from gi.repository import Gdk, Gtk, GObject, GdkPixbuf, GExiv2
+    from gi.repository import Gdk, Gtk, GObject, GLib, GdkPixbuf, GExiv2
 
 except Exception as e:    
     print('An error occured. Python or one of its sub modules is absent...\nIt would be wise to check your python installation.')
@@ -92,6 +90,15 @@ settings = {
     {
         # Auto crop the image to the area covered by all images.
         "auto_crop"             : ["-C",        True],
+        # Optimize X coordinate of the camera position.
+        "opt_x_coord"           : ["-x",        True],
+        # Optimize Y coordinate of the camera position.
+        "opt_y_coord"           : ["-y",        True],
+        # Optimize Z coordinate of the camera position.
+        # Useful for aligning more distorted images.
+        "opt_z_coord"           : ["-z",        True],
+        # Optimize radial distortion for all images, except for first.
+        "opt_radial_dist"       : ["-d",        True],
         # Optimize image center shift for all images, except for first.
         "opt_img_shift"         : ["-i",        True],
         # Optimize field of view for all images, except for first.
@@ -100,15 +107,15 @@ settings = {
         # Use GPU for remapping.
         "use_gpu"               : ["--gpu",     True],
         # Correlation threshold for identifying control points (default: 0.9).
-        "corr_thres"            : ["--corr",    0.6],
-        # Optimize radial distortion for all images, except for first.
-        "opt_radial_dist"       : ["-d",        True],
+        "corr_thres"            : ["--corr",    0.1],
+        # Remove all control points with an error higher than num pixels (default: 3).
+        "ctrl_pnt_thr"          : ["-t",        1],
         # Number of control points (per grid, see option -g) to create between adjacent images (default: 8).  
-        "num_ctrl_pnt"          : ["-c",        40],
+        "num_ctrl_pnt"          : ["-c",        20],
         # Scale down image by 2^scale (default: 1). Scaling down images will improve speed at the cost of accuracy.
         "scale_down"            : ["-s",        0],
         # Misc arguments
-        "misc_args"             : ["",          False]
+        "misc_args"             : ["-v",        True]
     },
     "fuse_settings"             :
     {
@@ -152,9 +159,10 @@ settings = {
     }
 }
 
-class data:
+class DataProvider:
     """Données utiles"""
-    def __init__(self):
+    def __init__(self, settings):
+        self.settings = settings
         self.update_folders()
         settings["cpus"] = multiprocessing.cpu_count()
         if settings["cpus"] > 1 and self.check_install("enfuse-mp"):
@@ -175,6 +183,7 @@ class data:
         if not os.path.exists(settings["preview_folder"]):
             os.makedirs(settings["preview_folder"])
 
+    @property
     def get_enfuse_options(self):
         options = []
         for key, value in settings["fuse_settings"].items():
@@ -193,13 +202,15 @@ class data:
                     else:
                         options.append(value[0] + " " + str(value[1]))
         return options
-
+    
+    @property
     def get_align_options(self):
         options = []
         for key, value in settings["align_settings"].items():
             # special treatment for boolean values
-            if (key == "auto_crop" or key == "opt_img_shift" or key == "opt_fov" or key == "use_gpu" or \
-                key == "misc_args" or key == "opt_radial_dist"):
+            if (key == "auto_crop" or  key == "use_gpu" or key == "misc_args" or \
+                key == "opt_img_shift" or key == "opt_fov" or key == "opt_radial_dist" or \
+                key == "opt_x_coord" or key == "opt_y_coord" or key == "opt_z_coord"):
                 if value[1]:
                     options.append(value[0])
             else:
@@ -209,6 +220,10 @@ class data:
                     else:
                         options.append(value[0] + " " + str(value[1]))
         return options
+
+    @property
+    def get_all_settings(self):
+        return self.settings
 
     def check_install(self, name):
         a = False
@@ -224,16 +239,10 @@ def toggled_cb(cell, path, user_data):
     model[path][column] = not model[path][column]
     return
 
-# PLEASE REAPAIR!! Python-imaging can't open .tiff (or some of them)    
 def create_thumbnail(path, size):
     outfile = os.path.join(settings["preview_folder"], os.path.split(path)[1])
     try:
         im = GdkPixbuf.Pixbuf.new_from_file_at_size(path, size[0], size[1])
-#        pb = Gtk.gdk.pixbuf_new_from_file(chemin)
-#        im = Interface.pixbuf2Image(Interface(),pb)
-#        im = Image.open(chemin)
-#        im.thumbnail(size)
-#        im.save(outfile, "JPEG")
         im.savev(outfile, "jpeg", [], [])
     except IOError:
         print(_("Generating %s thumbnail failed.") % path)
@@ -248,7 +257,6 @@ class Interface:
     """Interface pour le logiciel d'exposition-fusion enfuse"""
 
     def __init__(self):
-        
         # Set default icon
         Gtk.Window.set_default_icon_from_file(os.path.join(IMG, "macrofusion.png")) 
         
@@ -598,7 +606,7 @@ class Interface:
                         self.update_enfuse_options()
                         self.thread_preview = Thread_Preview(self.size, self.liststoreimport) 
                         self.thread_preview.start()
-                        timer = GObject.timeout_add (100, self.pulsate)
+                        timer = GLib.timeout_add (100, self.pulsate)
                         break
         if item<=1:
             self.messageinthebottle(_("Please add or activate at least two images.\n\n Cannot do anything smart with one or no image."))
@@ -664,7 +672,7 @@ class Interface:
 
         
     def pulsate(self):
-        if self.thread_preview.isAlive():           #Tant que le thread est en cours, 
+        if self.thread_preview.is_alive():           #Tant que le thread est en cours, 
             self.progressbar.set_text(_("Calculating preview..."))
             self.progressbar.pulse()               #on fait pulser la barre
             return True                            #et on renvoie True pour que gobject.timeout recommence
@@ -916,14 +924,14 @@ class Thread_Preview(threading.Thread):
         if not Gui.checkbutton_a5_align.get_active():
             images_a_fusionner = images_a_align
         if Gui.checkbutton_a5_align.get_active():
-            command = ["align_image_stack", "-a", os.path.join(settings["preview_folder"], "test")] + data.get_align_options() + images_a_align
+            command = ["align_image_stack", "-a", os.path.join(settings["preview_folder"], "test")] + data.get_align_options + images_a_align
             print(" ".join(command))
             Gui.statusbar.push(15, _(":: Align photos..."))
             preview_process = subprocess.Popen(command, stdout=subprocess.PIPE)
             preview_process.wait()
             Gui.statusbar.pop(15)
         Gui.statusbar.push(15, _(":: Fusing photos..."))
-        command = [settings["enfuser"], "-o", os.path.join(settings["preview_folder"], "preview.tif")] + data.get_enfuse_options() + images_a_fusionner
+        command = [settings["enfuser"], "-o", os.path.join(settings["preview_folder"], "preview.tif")] + data.get_enfuse_options + images_a_fusionner
         print(" ".join(command))
         preview_process = subprocess.Popen(command, stdout=subprocess.PIPE)
         preview_process.wait()
@@ -950,7 +958,7 @@ class Progress_Fusion:
        
         self.thread_fusion = Thread_Fusion(name, list, list_aligned, issend)
         self.thread_fusion.start()
-        timer = GObject.timeout_add (100, self.pulsate)
+        timer = GLib.timeout_add (100, self.pulsate)
         
     def pulsate(self):
         if self.thread_fusion.is_alive():
@@ -973,14 +981,14 @@ class Progress_Fusion:
 ##############################################################################
 
 class Thread_Fusion(threading.Thread):
-    def __init__(self, name, list, list_aligned, issend):
+    def __init__(self, name, img_list, img_list_aligned, issend):
         threading.Thread.__init__ (self)
         self.issend = issend
         self.name = name
-        self.list = list
-        self.list_aligned = list_aligned
-        self.command_fuse  = [settings["enfuser"], "-o", self.name] + data.get_enfuse_options() + self.list_aligned
-        self.command_align = ["align_image_stack", '-a', os.path.join(settings["preview_folder"], settings["align_prefix"])] + data.get_align_options() + self.list
+        self.img_list = img_list
+        self.img_list_aligned = img_list_aligned
+        self.command_fuse  = [data.get_all_settings["enfuser"], "-o", self.name] + data.get_enfuse_options + self.img_list_aligned
+        self.command_align = ["align_image_stack", '-a', os.path.join(settings["preview_folder"], settings["align_prefix"])] + data.get_align_options + self.img_list
 
         
     def run(self):
@@ -992,11 +1000,11 @@ class Thread_Fusion(threading.Thread):
             if Gui.checkbuttonalignfiles.get_active():
                 # copy aligned files in working folder for further processing by user:
                 count = 0
-                for file in self.list:
-                    tmp_filename     = self.list_aligned[count] #settings["align_prefix"]+str(count).zfill(4)+".tif"
+                for file in self.img_list:
+                    tmp_filename     = self.img_list_aligned[count] #settings["align_prefix"]+str(count).zfill(4)+".tif"
                     (path, file_)    = os.path.split(file)
                     (filename, ext)  = os.path.splitext(file_)
-                    new_filename     = os.path.join(settings["preview_folder"], filename + "_" + settings["align_prefix"] + ".tif")
+                    new_filename     = os.path.join(data.get_all_settings["preview_folder"], filename + "_" + data.get_all_settings["align_prefix"] + ".tif")
                     new_filename_dst = os.path.join(path, filename + "_" + settings["align_prefix"] + ".tif")
                     if os.path.exists(new_filename):
                         os.remove(new_filename)
@@ -1052,7 +1060,7 @@ class Apropos_Dialog:
                         
 if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal.SIG_DFL)
-    data = data()                                              
+    data = DataProvider(settings)
     Gui  = Interface()
                                
     if (len(sys.argv)>1):     
