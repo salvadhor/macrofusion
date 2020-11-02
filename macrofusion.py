@@ -152,6 +152,9 @@ settings = {
         "contrast-edge-scale"   : ["--contrast-edge-scale",     0, 0, 0],
         # use CIECAM02 to blend colors
         "use_ciecam"            : ["-c",                        False],
+        # use identified colorspace for blend operation to avoid colored pixel artifacts as mentioned here:
+        # https://discuss.pixls.us/t/enfuse-artifacts/4687
+        "identify_blend_colorspace": ["--blend-colorspace", "identity"],
         # save masks to files
         #"save-masks"            : ["--save-masks", "%f-softmask-%n.png:%f-hardmask-%n.png"],
         # load masks from files
