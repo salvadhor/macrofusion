@@ -393,8 +393,6 @@ class Interface:
  
         self.spinbuttonlargeurprev = self.gui.get_object("spinbuttonlargeurprev")
         self.spinbuttonhauteurprev = self.gui.get_object("spinbuttonhauteurprev")
-        self.checkbuttoncache = self.gui.get_object("checkbuttoncache")
-        self.spinbuttoncache = self.gui.get_object("spinbuttoncache")
         self.checkbuttonbloc = self.gui.get_object("checkbuttonbloc")
         self.spinbuttonbloc = self.gui.get_object("spinbuttonbloc")
         self.checkbuttonfinalsize = self.gui.get_object("checkbuttonfinalsize")
@@ -442,14 +440,6 @@ class Interface:
             self.spinbuttonlargeurprev.set_value(self.conf.getint('prefs', 'pwidth'))
         if self.conf.has_option('prefs', 'pheight'):
             self.spinbuttonhauteurprev.set_value(self.conf.getint('prefs', 'pheight'))
-        if self.conf.has_option('prefs', 'cachebutton'):
-            self.checkbuttoncache.set_active(self.conf.getboolean('prefs', 'cachebutton'))
-        if self.conf.has_option('prefs', 'cachesize'):
-            self.spinbuttoncache.set_value(self.conf.getint('prefs', 'cachesize'))
-        if self.conf.has_option('prefs', 'blocbutton'):
-            self.checkbuttonbloc.set_active(self.conf.getboolean('prefs', 'blocbutton'))
-        if self.conf.has_option('prefs', 'blocsize'):
-            self.spinbuttonbloc.set_value(self.conf.getint('prefs', 'blocsize'))
         if self.conf.has_option('prefs', 'outsize'):
             self.checkbuttonfinalsize.set_active(self.conf.getboolean('prefs', 'outsize'))
         if self.conf.has_option('prefs', 'outwidth'):
@@ -775,10 +765,6 @@ class Interface:
         # conf.set('prefs', 'w', self.spinbuttonEdge.get_value_as_int())
         conf.set('prefs', 'pwidth', str(self.spinbuttonlargeurprev.get_value_as_int()))
         conf.set('prefs', 'pheight', str(self.spinbuttonhauteurprev.get_value_as_int()))
-        conf.set('prefs', 'cachebutton', str(self.checkbuttoncache.get_active()))
-        conf.set('prefs', 'cachesize', str(self.spinbuttoncache.get_value_as_int()))
-        conf.set('prefs', 'blocbutton', str(self.checkbuttonbloc.get_active()))
-        conf.set('prefs', 'blocsize', str(self.spinbuttonbloc.get_value_as_int()))
         conf.set('prefs', 'outsize', str(self.checkbuttonfinalsize.get_active()))
         conf.set('prefs', 'outwidth', str(self.spinbuttonfinalwidth.get_value_as_int()))
         conf.set('prefs', 'outheight', str(self.spinbuttonfinalheight.get_value_as_int()))
