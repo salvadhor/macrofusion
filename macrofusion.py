@@ -117,6 +117,8 @@ settings = {
         # Misc arguments
         "misc_args"             : ["-v",        True]
     },
+    # algin settings for thumbnails shouldn't include seetings which don't work well on tiny resolutions
+    "align_settings_thumbnail"  : ["-C", "-x", "-y", "-z", "-d", "-i", "-m", "--gpu"],
     "fuse_settings"             :
     {
         # default compression setting (for JPG/TIFF) 
@@ -203,9 +205,11 @@ class DataProvider:
                         options.append(value[0] + " " + str(value[1]))
         return options
     
-    @property
-    def get_align_options(self):
+    def get_align_options(self, low_resolution=False):
         options = []
+        if low_resolution:
+            return settings["align_settings_thumbnail"]
+    
         for key, value in settings["align_settings"].items():
             # special treatment for boolean values
             if (key == "auto_crop" or  key == "use_gpu" or key == "misc_args" or \
@@ -924,7 +928,7 @@ class Thread_Preview(threading.Thread):
         if not Gui.checkbutton_a5_align.get_active():
             images_a_fusionner = images_a_align
         if Gui.checkbutton_a5_align.get_active():
-            command = ["align_image_stack", "-a", os.path.join(settings["preview_folder"], "test")] + data.get_align_options + images_a_align
+            command = ["align_image_stack", "-a", os.path.join(settings["preview_folder"], "test")] + data.get_align_options(low_resolution=True) + images_a_align
             print(" ".join(command))
             Gui.statusbar.push(15, _(":: Align photos..."))
             preview_process = subprocess.Popen(command, stdout=subprocess.PIPE)
@@ -988,7 +992,7 @@ class Thread_Fusion(threading.Thread):
         self.img_list = img_list
         self.img_list_aligned = img_list_aligned
         self.command_fuse  = [data.get_all_settings["enfuser"], "-o", self.name] + data.get_enfuse_options + self.img_list_aligned
-        self.command_align = ["align_image_stack", '-a', os.path.join(settings["preview_folder"], settings["align_prefix"])] + data.get_align_options + self.img_list
+        self.command_align = ["align_image_stack", '-a', os.path.join(settings["preview_folder"], settings["align_prefix"])] + data.get_align_options() + self.img_list
 
         
     def run(self):
