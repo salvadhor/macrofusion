@@ -73,7 +73,7 @@ locale.textdomain(APP)
 ####################################################
 ########Classe des données##########################
 ####################################################
-enfuse_gray_projector_options = ["anti-value", "average", "l-star", "lightness", "value", "luminance", "pl-star"]
+enfuse_gray_projector_options = ["average", "l-star", "lightness", "value", "luminance", "pl-star"]
 tiff_compression = {0:"NONE", 1:"PACKBITS", 2:"LZW", 3:"DEFLATE"}
 settings = {
     "install_folder"            : sys.path[0],
@@ -89,14 +89,14 @@ settings = {
     # Options overview: http://wiki.panotools.org/Align_image_stack
     {
         # Auto crop the image to the area covered by all images.
-        "auto_crop"             : ["-C",        True],
+        "auto_crop"             : ["-C",        False],
         # Optimize X coordinate of the camera position.
-        "opt_x_coord"           : ["-x",        True],
+        "opt_x_coord"           : ["-x",        False],
         # Optimize Y coordinate of the camera position.
-        "opt_y_coord"           : ["-y",        True],
+        "opt_y_coord"           : ["-y",        False],
         # Optimize Z coordinate of the camera position.
         # Useful for aligning more distorted images.
-        "opt_z_coord"           : ["-z",        True],
+        "opt_z_coord"           : ["-z",        False],
         # Optimize radial distortion for all images, except for first.
         "opt_radial_dist"       : ["-d",        True],
         # Optimize image center shift for all images, except for first.
@@ -107,11 +107,11 @@ settings = {
         # Use GPU for remapping.
         "use_gpu"               : ["--gpu",     True],
         # Correlation threshold for identifying control points (default: 0.9).
-        "corr_thres"            : ["--corr",    0.1],
+        #"corr_thres"            : ["--corr",    0.1],
         # Remove all control points with an error higher than num pixels (default: 3).
-        "ctrl_pnt_thr"          : ["-t",        1],
+        #"ctrl_pnt_thr"          : ["-t",        1],
         # Number of control points (per grid, see option -g) to create between adjacent images (default: 8).  
-        "num_ctrl_pnt"          : ["-c",        20],
+        #"num_ctrl_pnt"          : ["-c",        20],
         # Scale down image by 2^scale (default: 1). Scaling down images will improve speed at the cost of accuracy.
         "scale_down"            : ["-s",        0],
         # Misc arguments
@@ -621,7 +621,10 @@ class Interface:
         settings["fuse_settings"]["exposure-sigma"][1]      = self.spinbuttonsigma.get_value()
         settings["fuse_settings"]["contrast-weight"][1]     = self.spinbuttoncont.get_value()
         settings["fuse_settings"]["saturation-weight"][1]   = self.spinbuttonsat.get_value()
-        settings["fuse_settings"]["levels"][1]              = self.spinbuttonlevel.get_value_as_int()
+        if self.check_pyramidelevel.get_active():
+            settings["fuse_settings"]["levels"][1]          = self.spinbuttonlevel.get_value_as_int()
+        else:
+            settings["fuse_settings"]["levels"][1]          = 0
         if self.check_hardmask.get_active():
             settings["fuse_settings"]["hard-mask"][1] = True
             settings["fuse_settings"]["soft-mask"][1] = False
