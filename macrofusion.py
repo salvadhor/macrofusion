@@ -73,7 +73,7 @@ locale.textdomain(APP)
 ####################################################
 ########Classe des données##########################
 ####################################################
-enfuse_gray_projector_options = ["average", "l-star", "lightness", "value", "luminance", "pl-star"]
+enfuse_gray_projector_options = ["anti-value", "average", "l-star", "lightness", "value", "luminance", "pl-star"]
 tiff_compression = {0:"NONE", 1:"PACKBITS", 2:"LZW", 3:"DEFLATE"}
 settings = {
     "install_folder"            : sys.path[0],
@@ -107,11 +107,11 @@ settings = {
         # Use GPU for remapping.
         "use_gpu"               : ["--gpu",     True],
         # Correlation threshold for identifying control points (default: 0.9).
-        #"corr_thres"            : ["--corr",    0.1],
+        "corr_thres"            : ["--corr",    0.9],
         # Remove all control points with an error higher than num pixels (default: 3).
-        #"ctrl_pnt_thr"          : ["-t",        1],
+        "ctrl_pnt_thr"          : ["-t",        3],
         # Number of control points (per grid, see option -g) to create between adjacent images (default: 8).  
-        #"num_ctrl_pnt"          : ["-c",        20],
+        "num_ctrl_pnt"          : ["-c",        8],
         # Scale down image by 2^scale (default: 1). Scaling down images will improve speed at the cost of accuracy.
         "scale_down"            : ["-s",        0],
         # Misc arguments
@@ -140,10 +140,10 @@ settings = {
         # force hard blend masks and no averaging on finest scale
         "hard-mask"             : ["--hard-mask",               False],
         # apply gray-scale PROJECTOR in exposure or contrast weighing, where PROJECTOR is one of
-        # 0: "average", 1: "l-star", 2: "lightness", 3: "value", 4: "luminance", 5: "pl-star"
+        # 0: "anti-value", 1: "average", 2: "l-star", 3: "lightness", 4: "value", 5: "luminance", 6: "pl-star"
         "gray-projector"        : ["--gray-projector",          1],
         # set window SIZE for local-contrast analysis     
-        "contrast-window-size"  : ["--contrast-window-size",    3],
+        "contrast-window-size"  : ["--contrast-window-size",    5],
         # minimum CURVATURE for an edge to qualify; append "%" for relative values
         "contrast-min-curvature": ["--contrast-min-curvature",  0],
         # set scale on which to look for edges; positive LCESCALE switches on.
@@ -354,7 +354,7 @@ class Interface:
 
         #valeurs des options et configurations :
         self.check_pyramidelevel = self.gui.get_object("check_pyramidelevel")
-        self.check_pyramidelevel.set_active(1)
+        self.check_pyramidelevel.set_active(0)
 
         self.spinbuttonlevel = self.gui.get_object("spinbuttonlevel")
         self.spinbuttonlevel.set_value(settings["fuse_settings"]["levels"][1])
@@ -365,6 +365,13 @@ class Interface:
         self.check_contwin = self.gui.get_object("check_contwin")
         self.spinbuttoncontwin = self.gui.get_object("spinbuttoncontwin")
         self.spinbuttoncontwin.set_value(settings["fuse_settings"]["contrast-window-size"][1])
+        
+        self.check_xcoord = self.gui.get_object("check_x_coord")
+        self.check_xcoord.set_active(settings["align_settings"]["opt_x_coord"][1])
+        self.check_ycoord = self.gui.get_object("check_y_coord")
+        self.check_ycoord.set_active(settings["align_settings"]["opt_y_coord"][1])
+        self.check_zcoord = self.gui.get_object("check_z_coord")
+        self.check_zcoord.set_active(settings["align_settings"]["opt_z_coord"][1])
 
         self.check_courb = self.gui.get_object("check_courb")
         self.check_prctcourb = self.gui.get_object("check_prctcourb")
@@ -390,7 +397,28 @@ class Interface:
         self.check_desatmeth = self.gui.get_object("check_desatmeth")
         self.combobox_desatmet = self.gui.get_object("combobox_desatmet")
         self.combobox_desatmet.set_active(settings["fuse_settings"]["gray-projector"][1])
- 
+        
+        self.check_corrthres = self.gui.get_object("check_corrthres")
+        self.spinbuttoncorrthres = self.gui.get_object("spinbuttoncorrthres")
+        self.ajus_corrthres = Gtk.Adjustment(value=0.9, lower=0, upper=1, step_increment=0.1, page_increment=0.1, page_size=0)
+        self.spinbuttoncorrthres.set_adjustment(self.ajus_corrthres)
+        self.spinbuttoncorrthres.set_digits(2)
+        self.spinbuttoncorrthres.set_value(settings["align_settings"]["corr_thres"][1])
+
+        self.check_pnt = self.gui.get_object("check_pnt")
+        self.spinbuttonpnt = self.gui.get_object("spinbuttonpnt")
+        #self.ajus_corrthres = Gtk.Adjustment(value=0, lower=0, upper=1, step_increment=0.1, page_increment=0.1, page_size=0)
+        #self.spinbuttoncorrthres.set_adjustment(self.ajus_corrthres)
+        #self.spinbuttoncorrthres.set_digits(1)
+        self.spinbuttonpnt.set_value(int(settings["align_settings"]["num_ctrl_pnt"][1]))
+
+        self.check_pntthr = self.gui.get_object("check_pntthr")
+        self.spinbuttonpntthr = self.gui.get_object("spinbuttonpntthr")
+        #self.ajus_corrthres = Gtk.Adjustment(value=0, lower=0, upper=1, step_increment=0.1, page_increment=0.1, page_size=0)
+        #self.spinbuttoncorrthres.set_adjustment(self.ajus_corrthres)
+        #self.spinbuttoncorrthres.set_digits(1)
+        self.spinbuttonpntthr.set_value(int(settings["align_settings"]["ctrl_pnt_thr"][1]))
+
         self.spinbuttonlargeurprev = self.gui.get_object("spinbuttonlargeurprev")
         self.spinbuttonhauteurprev = self.gui.get_object("spinbuttonhauteurprev")
         self.checkbuttonbloc = self.gui.get_object("checkbuttonbloc")
@@ -407,7 +435,8 @@ class Interface:
         self.checkbutton_a5_align = self.gui.get_object("checkbutton_a5_align")
         self.checkbutton_a5_crop = self.gui.get_object("checkbutton_a5_crop")
         self.checkbutton_a5_shift = self.gui.get_object("checkbutton_a5_shift")
-        self.checkbutton_a5_field = self.gui.get_object("checkbutton_a5_field")                
+        self.checkbutton_a5_field = self.gui.get_object("checkbutton_a5_field")
+        self.checkbutton_a5_radial = self.gui.get_object("checkbutton_a5_radial")
         self.buttonabout = self.gui.get_object("buttonabout")
         
         self.entryedit_field = self.gui.get_object("entry_editor")                
@@ -425,12 +454,14 @@ class Interface:
         self.checkbutton_a5_crop.set_sensitive(False)
         self.checkbutton_a5_field.set_sensitive(False)
         self.checkbutton_a5_shift.set_sensitive(False)
+        self.checkbutton_a5_radial.set_sensitive(False)
         self.checkbuttonalignfiles.set_sensitive(False)
 
         # update gui according to settings
         self.checkbutton_a5_crop.set_active(settings["align_settings"]["auto_crop"][1])
         self.checkbutton_a5_field.set_active(settings["align_settings"]["opt_fov"][1])
         self.checkbutton_a5_shift.set_active(settings["align_settings"]["opt_img_shift"][1])
+        self.checkbutton_a5_radial.set_active(settings["align_settings"]["opt_radial_dist"][1])
 
         # Read values from config
         self.conf = configparser.ConfigParser()
@@ -505,11 +536,13 @@ class Interface:
             self.checkbutton_a5_crop.set_sensitive(True)
             self.checkbutton_a5_field.set_sensitive(True)
             self.checkbutton_a5_shift.set_sensitive(True)
+            self.checkbutton_a5_radial.set_sensitive(True)
             self.checkbuttonalignfiles.set_sensitive(True)
         else:
             self.checkbutton_a5_crop.set_sensitive(False)
             self.checkbutton_a5_field.set_sensitive(False)
             self.checkbutton_a5_shift.set_sensitive(False)
+            self.checkbutton_a5_radial.set_sensitive(False)
             self.checkbuttonalignfiles.set_sensitive(False)
 
     def exit_app(self, action):
@@ -611,9 +644,29 @@ class Interface:
 
     def update_align_options(self):
         if self.checkbutton_a5_align.get_active():
-            settings["align_settings"]["auto_crop"][1]     = self.checkbutton_a5_crop.get_active()
-            settings["align_settings"]["opt_img_shift"][1] = self.checkbutton_a5_shift.get_active()
-            settings["align_settings"]["opt_fov"][1]       = self.checkbutton_a5_field.get_active()
+            settings["align_settings"]["auto_crop"][1]          = self.checkbutton_a5_crop.get_active()
+            settings["align_settings"]["opt_img_shift"][1]      = self.checkbutton_a5_shift.get_active()
+            settings["align_settings"]["opt_fov"][1]            = self.checkbutton_a5_field.get_active()
+            settings["align_settings"]["opt_radial_dist"][1]    = self.checkbutton_a5_radial.get_active()
+        
+        if self.check_corrthres.get_active():
+            settings["align_settings"]["corr_thres"][1]       = self.spinbuttoncorrthres.get_value()
+        else:
+            settings["align_settings"]["corr_thres"][1]       = 0.0
+        
+        if self.check_pnt.get_active():
+            settings["align_settings"]["num_ctrl_pnt"][1]       = int(self.spinbuttonpnt.get_value())
+        else:
+            settings["align_settings"]["num_ctrl_pnt"][1]       = 0
+        
+        if self.check_pntthr.get_active():
+            settings["align_settings"]["ctrl_pnt_thr"][1]       = int(self.spinbuttonpntthr.get_value())
+        else:
+            settings["align_settings"]["ctrl_pnt_thr"][1]       = 0
+        
+        settings["align_settings"]["opt_x_coord"][1]       = self.check_xcoord.get_active()
+        settings["align_settings"]["opt_y_coord"][1]       = self.check_ycoord.get_active()
+        settings["align_settings"]["opt_z_coord"][1]       = self.check_zcoord.get_active()
 
     def update_enfuse_options(self):
         settings["fuse_settings"]["exposure-weight"][1]     = self.spinbuttonexp.get_value()
@@ -634,6 +687,8 @@ class Interface:
             
         if self.check_contwin.get_active():
             settings["fuse_settings"]["contrast-window-size"][1] = self.spinbuttoncontwin.get_value_as_int()
+        else:
+            settings["fuse_settings"]["contrast-window-size"][1] = 0
  
         if self.check_courb.get_active():
             if self.check_prctcourb.get_active():
@@ -1000,7 +1055,7 @@ class Thread_Fusion(threading.Thread):
         self.img_list_aligned = img_list_aligned
         self.command_fuse  = [data.get_all_settings["enfuser"], "-o", self.name] + data.get_enfuse_options + self.img_list_aligned
         self.command_align = ["align_image_stack", '-a', os.path.join(settings["preview_folder"], settings["align_prefix"])] + data.get_align_options() + self.img_list
-
+        #sprint(' '.join(self.command_align ) + "\n" + ' '.join(self.command_fuse) + "\n")
         
     def run(self):
         if Gui.checkbutton_a5_align.get_active():       
