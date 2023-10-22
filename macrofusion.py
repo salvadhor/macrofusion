@@ -140,7 +140,7 @@ settings = {
         # force hard blend masks and no averaging on finest scale
         "hard-mask"             : ["--hard-mask",               False],
         # apply gray-scale PROJECTOR in exposure or contrast weighing, where PROJECTOR is one of
-        # 0: "anti-value", 1: "average", 2: "l-star", 3: "lightness", 4: "luminance", 5: "pl-star", 6: "value"
+        # 0: "average", 1: "l-star", 2: "lightness", 3: "value", 4: "luminance", 5: "pl-star"
         "gray-projector"        : ["--gray-projector",          1],
         # set window SIZE for local-contrast analysis     
         "contrast-window-size"  : ["--contrast-window-size",    3],
