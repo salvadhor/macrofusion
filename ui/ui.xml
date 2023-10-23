@@ -840,6 +840,9 @@ Useful for aligning focus stacks with slightly different magnification.
                                             <property name="visible">True</property>
                                             <property name="can-focus">True</property>
                                             <property name="receives-default">False</property>
+                                            <property name="tooltip-text" translatable="yes">
+Optimize radial distortion for all images, except for first.
+</property>
                                             <property name="draw-indicator">True</property>
                                           </object>
                                           <packing>
@@ -960,6 +963,9 @@ Correlation threshold for identifying control points (default: 0.9).</property>
                                             <property name="visible">True</property>
                                             <property name="can-focus">True</property>
                                             <property name="receives-default">False</property>
+                                            <property name="tooltip-text" translatable="yes">-c
+
+Number of control points to create between adjacent images (default: 8).</property>
                                             <property name="draw-indicator">True</property>
                                           </object>
                                           <packing>
@@ -1020,6 +1026,9 @@ Correlation threshold for identifying control points (default: 0.9).</property>
                                             <property name="visible">True</property>
                                             <property name="can-focus">True</property>
                                             <property name="receives-default">False</property>
+                                            <property name="tooltip-text" translatable="yes">-t
+
+Remove all control points with an error higher than num pixels (default: 3).</property>
                                             <property name="draw-indicator">True</property>
                                           </object>
                                           <packing>
