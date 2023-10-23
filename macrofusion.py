@@ -706,7 +706,11 @@ class Interface:
                 settings["fuse_settings"]["contrast-edge-scale"][3] = str(self.spinbuttonLceF.get_value()) + '%'
             else:
                 settings["fuse_settings"]["contrast-edge-scale"][3] = str(self.spinbuttonLceF.get_value())
-        
+        else:
+            settings["fuse_settings"]["contrast-edge-scale"][1] = 0
+            settings["fuse_settings"]["contrast-edge-scale"][2] = 0
+            settings["fuse_settings"]["contrast-edge-scale"][3] = 0
+
         if self.check_ciecam.get_active():
             settings["fuse_settings"]["use_ciecam"][1] = True
 
