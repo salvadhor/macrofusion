@@ -659,8 +659,6 @@ class Interface:
         settings["fuse_settings"]["saturation-weight"][1]   = self.spinbuttonsat.get_value()
         if self.check_pyramidelevel.get_active():
             settings["fuse_settings"]["levels"][1]          = self.spinbuttonlevel.get_value_as_int()
-        else:
-            settings["fuse_settings"]["levels"][1]          = 0
         if self.check_hardmask.get_active():
             settings["fuse_settings"]["hard-mask"][1] = True
             settings["fuse_settings"]["soft-mask"][1] = False
