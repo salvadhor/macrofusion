@@ -47,13 +47,11 @@ if os.path.exists('/usr/share/mfusion/ui/ui.xml') \
     and os.path.exists('/usr/share/mfusion/ui/progress.xml') \
     and os.path.exists('/usr/share/pixmaps/macrofusion.png') \
     and os.path.exists('/usr/share/mfusion/images/logoSplash.png'):
-    # print ("System wide install!")
     DIR = '/usr/share/locale/'
     IMG = '/usr/share/pixmaps/'
     IMG2 = '/usr/share/mfusion/images/'
     UI = '/usr/share/mfusion/ui/'
 elif os.path.exists(sys.path[0] + "/ui/ui.xml"):
-    # print ("Local run!")
     DIR = sys.path[0] + '/locale/'
     IMG = sys.path[0] + '/images/'
     IMG2 = sys.path[0] + '/images/'
@@ -89,14 +87,14 @@ settings = {
     # Options overview: http://wiki.panotools.org/Align_image_stack
     {
         # Auto crop the image to the area covered by all images.
-        "auto_crop"             : ["-C",        True],
+        "auto_crop"             : ["-C",        False],
         # Optimize X coordinate of the camera position.
-        "opt_x_coord"           : ["-x",        True],
+        "opt_x_coord"           : ["-x",        False],
         # Optimize Y coordinate of the camera position.
-        "opt_y_coord"           : ["-y",        True],
+        "opt_y_coord"           : ["-y",        False],
         # Optimize Z coordinate of the camera position.
         # Useful for aligning more distorted images.
-        "opt_z_coord"           : ["-z",        True],
+        "opt_z_coord"           : ["-z",        False],
         # Optimize radial distortion for all images, except for first.
         "opt_radial_dist"       : ["-d",        True],
         # Optimize image center shift for all images, except for first.
@@ -107,11 +105,11 @@ settings = {
         # Use GPU for remapping.
         "use_gpu"               : ["--gpu",     True],
         # Correlation threshold for identifying control points (default: 0.9).
-        "corr_thres"            : ["--corr",    0.1],
+        "corr_thres"            : ["--corr",    0.9],
         # Remove all control points with an error higher than num pixels (default: 3).
-        "ctrl_pnt_thr"          : ["-t",        1],
+        "ctrl_pnt_thr"          : ["-t",        3],
         # Number of control points (per grid, see option -g) to create between adjacent images (default: 8).  
-        "num_ctrl_pnt"          : ["-c",        20],
+        "num_ctrl_pnt"          : ["-c",        8],
         # Scale down image by 2^scale (default: 1). Scaling down images will improve speed at the cost of accuracy.
         "scale_down"            : ["-s",        0],
         # Misc arguments
@@ -140,10 +138,10 @@ settings = {
         # force hard blend masks and no averaging on finest scale
         "hard-mask"             : ["--hard-mask",               False],
         # apply gray-scale PROJECTOR in exposure or contrast weighing, where PROJECTOR is one of
-        # 0: "anti-value", 1: "average", 2: "l-star", 3: "lightness", 4: "luminance", 5: "pl-star", 6: "value"
+        # 0: "anti-value", 1: "average", 2: "l-star", 3: "lightness", 4: "value", 5: "luminance", 6: "pl-star"
         "gray-projector"        : ["--gray-projector",          1],
         # set window SIZE for local-contrast analysis     
-        "contrast-window-size"  : ["--contrast-window-size",    3],
+        "contrast-window-size"  : ["--contrast-window-size",    5],
         # minimum CURVATURE for an edge to qualify; append "%" for relative values
         "contrast-min-curvature": ["--contrast-min-curvature",  0],
         # set scale on which to look for edges; positive LCESCALE switches on.
@@ -354,7 +352,7 @@ class Interface:
 
         #valeurs des options et configurations :
         self.check_pyramidelevel = self.gui.get_object("check_pyramidelevel")
-        self.check_pyramidelevel.set_active(1)
+        self.check_pyramidelevel.set_active(0)
 
         self.spinbuttonlevel = self.gui.get_object("spinbuttonlevel")
         self.spinbuttonlevel.set_value(settings["fuse_settings"]["levels"][1])
@@ -365,6 +363,13 @@ class Interface:
         self.check_contwin = self.gui.get_object("check_contwin")
         self.spinbuttoncontwin = self.gui.get_object("spinbuttoncontwin")
         self.spinbuttoncontwin.set_value(settings["fuse_settings"]["contrast-window-size"][1])
+        
+        self.check_xcoord = self.gui.get_object("check_x_coord")
+        self.check_xcoord.set_active(settings["align_settings"]["opt_x_coord"][1])
+        self.check_ycoord = self.gui.get_object("check_y_coord")
+        self.check_ycoord.set_active(settings["align_settings"]["opt_y_coord"][1])
+        self.check_zcoord = self.gui.get_object("check_z_coord")
+        self.check_zcoord.set_active(settings["align_settings"]["opt_z_coord"][1])
 
         self.check_courb = self.gui.get_object("check_courb")
         self.check_prctcourb = self.gui.get_object("check_prctcourb")
@@ -390,7 +395,22 @@ class Interface:
         self.check_desatmeth = self.gui.get_object("check_desatmeth")
         self.combobox_desatmet = self.gui.get_object("combobox_desatmet")
         self.combobox_desatmet.set_active(settings["fuse_settings"]["gray-projector"][1])
- 
+        
+        self.check_corrthres = self.gui.get_object("check_corrthres")
+        self.spinbuttoncorrthres = self.gui.get_object("spinbuttoncorrthres")
+        self.ajus_corrthres = Gtk.Adjustment(value=0.9, lower=0, upper=1, step_increment=0.1, page_increment=0.1, page_size=0)
+        self.spinbuttoncorrthres.set_adjustment(self.ajus_corrthres)
+        self.spinbuttoncorrthres.set_digits(2)
+        self.spinbuttoncorrthres.set_value(settings["align_settings"]["corr_thres"][1])
+
+        self.check_pnt = self.gui.get_object("check_pnt")
+        self.spinbuttonpnt = self.gui.get_object("spinbuttonpnt")
+        self.spinbuttonpnt.set_value(int(settings["align_settings"]["num_ctrl_pnt"][1]))
+
+        self.check_pntthr = self.gui.get_object("check_pntthr")
+        self.spinbuttonpntthr = self.gui.get_object("spinbuttonpntthr")
+        self.spinbuttonpntthr.set_value(int(settings["align_settings"]["ctrl_pnt_thr"][1]))
+
         self.spinbuttonlargeurprev = self.gui.get_object("spinbuttonlargeurprev")
         self.spinbuttonhauteurprev = self.gui.get_object("spinbuttonhauteurprev")
         self.checkbuttonbloc = self.gui.get_object("checkbuttonbloc")
@@ -407,7 +427,8 @@ class Interface:
         self.checkbutton_a5_align = self.gui.get_object("checkbutton_a5_align")
         self.checkbutton_a5_crop = self.gui.get_object("checkbutton_a5_crop")
         self.checkbutton_a5_shift = self.gui.get_object("checkbutton_a5_shift")
-        self.checkbutton_a5_field = self.gui.get_object("checkbutton_a5_field")                
+        self.checkbutton_a5_field = self.gui.get_object("checkbutton_a5_field")
+        self.checkbutton_a5_radial = self.gui.get_object("checkbutton_a5_radial")
         self.buttonabout = self.gui.get_object("buttonabout")
         
         self.entryedit_field = self.gui.get_object("entry_editor")                
@@ -425,12 +446,14 @@ class Interface:
         self.checkbutton_a5_crop.set_sensitive(False)
         self.checkbutton_a5_field.set_sensitive(False)
         self.checkbutton_a5_shift.set_sensitive(False)
+        self.checkbutton_a5_radial.set_sensitive(False)
         self.checkbuttonalignfiles.set_sensitive(False)
 
         # update gui according to settings
         self.checkbutton_a5_crop.set_active(settings["align_settings"]["auto_crop"][1])
         self.checkbutton_a5_field.set_active(settings["align_settings"]["opt_fov"][1])
         self.checkbutton_a5_shift.set_active(settings["align_settings"]["opt_img_shift"][1])
+        self.checkbutton_a5_radial.set_active(settings["align_settings"]["opt_radial_dist"][1])
 
         # Read values from config
         self.conf = configparser.ConfigParser()
@@ -505,17 +528,16 @@ class Interface:
             self.checkbutton_a5_crop.set_sensitive(True)
             self.checkbutton_a5_field.set_sensitive(True)
             self.checkbutton_a5_shift.set_sensitive(True)
+            self.checkbutton_a5_radial.set_sensitive(True)
             self.checkbuttonalignfiles.set_sensitive(True)
         else:
             self.checkbutton_a5_crop.set_sensitive(False)
             self.checkbutton_a5_field.set_sensitive(False)
             self.checkbutton_a5_shift.set_sensitive(False)
+            self.checkbutton_a5_radial.set_sensitive(False)
             self.checkbuttonalignfiles.set_sensitive(False)
 
     def exit_app(self, action):
-        # cancel = self.autosave_image()
-        # if cancel:
-        #    return True
         self.stop_now = True
         self.closing_app = True
         self.save_settings()
@@ -546,12 +568,6 @@ class Interface:
         self.colonneselect.pack_start(self.select, True)                        #on met le cellrender dans la colonne
         self.colonneselect.add_attribute(self.select, 'active', 0)              #on met les boutons actifs par défaut
         
-        # self.colonneimages = Gtk.TreeViewColumn(_('Image'))                        #deuxieme colonne, titre 'Image'
-        # self.listimages.append_column(self.colonneimages)                      #on rajoute la colonne dans le treeview
-        # self.cell = Gtk.CellRendererText()                                      #Ce sera des cellules de texte
-        # self.colonneimages.pack_start(self.cell, True)                          #que l'on met dans la colonne
-        # self.colonneimages.add_attribute(self.cell, 'text', 1)                  #et on specifie que c'est du texte simple
-       
         self.colonneimages2 = Gtk.TreeViewColumn(_("Thumbnail"))                        #deuxieme colonne, titre 'Image'
         self.listimages.append_column(self.colonneimages2)                      #on rajoute la colonne dans le treeview
         self.cell2 = Gtk.CellRendererPixbuf()                                      #Ce sera des cellules de texte
@@ -611,9 +627,29 @@ class Interface:
 
     def update_align_options(self):
         if self.checkbutton_a5_align.get_active():
-            settings["align_settings"]["auto_crop"][1]     = self.checkbutton_a5_crop.get_active()
-            settings["align_settings"]["opt_img_shift"][1] = self.checkbutton_a5_shift.get_active()
-            settings["align_settings"]["opt_fov"][1]       = self.checkbutton_a5_field.get_active()
+            settings["align_settings"]["auto_crop"][1]          = self.checkbutton_a5_crop.get_active()
+            settings["align_settings"]["opt_img_shift"][1]      = self.checkbutton_a5_shift.get_active()
+            settings["align_settings"]["opt_fov"][1]            = self.checkbutton_a5_field.get_active()
+            settings["align_settings"]["opt_radial_dist"][1]    = self.checkbutton_a5_radial.get_active()
+        
+        if self.check_corrthres.get_active():
+            settings["align_settings"]["corr_thres"][1]       = self.spinbuttoncorrthres.get_value()
+        else:
+            settings["align_settings"]["corr_thres"][1]       = 0.0
+        
+        if self.check_pnt.get_active():
+            settings["align_settings"]["num_ctrl_pnt"][1]       = int(self.spinbuttonpnt.get_value())
+        else:
+            settings["align_settings"]["num_ctrl_pnt"][1]       = 0
+        
+        if self.check_pntthr.get_active():
+            settings["align_settings"]["ctrl_pnt_thr"][1]       = int(self.spinbuttonpntthr.get_value())
+        else:
+            settings["align_settings"]["ctrl_pnt_thr"][1]       = 0
+        
+        settings["align_settings"]["opt_x_coord"][1]       = self.check_xcoord.get_active()
+        settings["align_settings"]["opt_y_coord"][1]       = self.check_ycoord.get_active()
+        settings["align_settings"]["opt_z_coord"][1]       = self.check_zcoord.get_active()
 
     def update_enfuse_options(self):
         settings["fuse_settings"]["exposure-weight"][1]     = self.spinbuttonexp.get_value()
@@ -621,7 +657,8 @@ class Interface:
         settings["fuse_settings"]["exposure-sigma"][1]      = self.spinbuttonsigma.get_value()
         settings["fuse_settings"]["contrast-weight"][1]     = self.spinbuttoncont.get_value()
         settings["fuse_settings"]["saturation-weight"][1]   = self.spinbuttonsat.get_value()
-        settings["fuse_settings"]["levels"][1]              = self.spinbuttonlevel.get_value_as_int()
+        if self.check_pyramidelevel.get_active():
+            settings["fuse_settings"]["levels"][1]          = self.spinbuttonlevel.get_value_as_int()
         if self.check_hardmask.get_active():
             settings["fuse_settings"]["hard-mask"][1] = True
             settings["fuse_settings"]["soft-mask"][1] = False
@@ -631,6 +668,8 @@ class Interface:
             
         if self.check_contwin.get_active():
             settings["fuse_settings"]["contrast-window-size"][1] = self.spinbuttoncontwin.get_value_as_int()
+        else:
+            settings["fuse_settings"]["contrast-window-size"][1] = 0
  
         if self.check_courb.get_active():
             if self.check_prctcourb.get_active():
@@ -648,7 +687,11 @@ class Interface:
                 settings["fuse_settings"]["contrast-edge-scale"][3] = str(self.spinbuttonLceF.get_value()) + '%'
             else:
                 settings["fuse_settings"]["contrast-edge-scale"][3] = str(self.spinbuttonLceF.get_value())
-        
+        else:
+            settings["fuse_settings"]["contrast-edge-scale"][1] = 0
+            settings["fuse_settings"]["contrast-edge-scale"][2] = 0
+            settings["fuse_settings"]["contrast-edge-scale"][3] = 0
+
         if self.check_ciecam.get_active():
             settings["fuse_settings"]["use_ciecam"][1] = True
 
@@ -762,7 +805,6 @@ class Interface:
     def save_settings(self):
         conf = configparser.ConfigParser()
         conf.add_section('prefs')
-        # conf.set('prefs', 'w', self.spinbuttonEdge.get_value_as_int())
         conf.set('prefs', 'pwidth', str(self.spinbuttonlargeurprev.get_value_as_int()))
         conf.set('prefs', 'pheight', str(self.spinbuttonhauteurprev.get_value_as_int()))
         conf.set('prefs', 'outsize', str(self.checkbuttonfinalsize.get_active()))
@@ -795,18 +837,32 @@ class Interface:
         settings["default_folder"] = path
         for file in self.files:
             if re.search('\\.jpg$|\\.jpeg$|\\.tiff$|\\.tif$', file, flags=re.IGNORECASE):
-                pb = GdkPixbuf.Pixbuf.new_from_file(file)
-                im = self.pixbuf2Image(pb)
-                self.size = im.size
-                # self.tags2 = Gui.get_exif(file)
-                if not self.tags2:
-                    self.tags2 = ''
-                self.tooltip = ("\n" + _("<b>Filename:</b> ") + os.path.basename(file) + "\n"+_("<b>Resolution:</b> ") + str(str(self.size[0]) + "x" + str(self.size[1])) + "\n" + self.tags2)
-                self.liststoreimport.append([1, file, GdkPixbuf.Pixbuf.new_from_file_at_size(file, 128, 128), self.tooltip])
+                try:
+                    pb = GdkPixbuf.Pixbuf.new_from_file(file)
+                    im = self.pixbuf2Image(pb)
+                    self.size = im.size
+                    if not self.tags2:
+                        self.tags2 = ''
+                    self.tooltip = ("\n" + _("<b>Filename:</b> ") + os.path.basename(file) + "\n"+_("<b>Resolution:</b> ") + str(str(self.size[0]) + "x" + str(self.size[1])) + "\n" + self.tags2)
+                    self.liststoreimport.append([1, file, GdkPixbuf.Pixbuf.new_from_file_at_size(file, 128, 128), self.tooltip])
+                except GLib.GError:
+                    message = file
+                    meta = GExiv2.Metadata(file)
+                    bps = int(meta.try_get_tag_string('Exif.Image.BitsPerSample')[0:2])
+                    sf = int(meta.try_get_tag_string('Exif.Image.SampleFormat')[0:2])
+                    if bps == None or sf == None:
+                        message += " [format:Unknown] not supported"
+                    elif sf > 1:
+                        message += " [format:float" + str(bps) + "] not supported"
+                    elif bps > 16:
+                        message += " [format:int" + str(bps) + "] not supported"
+                    else:
+                        message += " [format:Unknown] not supported"
+                    self.badfiles.append(message)
             else:
                 self.badfiles.append(file)
         if len(self.badfiles)>0:
-            message = _("Only JPEG and TIFF files are allowed.\n\nCannot open:\n")
+            message = _("Only JPEG and TIFF (int8, int16) files are allowed.\n\nCannot open:\n")
             for itz in self.badfiles:
                 message += itz + "\n"
             Gui.messageinthebottle(message)
@@ -982,7 +1038,6 @@ class Thread_Fusion(threading.Thread):
         self.img_list_aligned = img_list_aligned
         self.command_fuse  = [data.get_all_settings["enfuser"], "-o", self.name] + data.get_enfuse_options + self.img_list_aligned
         self.command_align = ["align_image_stack", '-a', os.path.join(settings["preview_folder"], settings["align_prefix"])] + data.get_align_options() + self.img_list
-
         
     def run(self):
         if Gui.checkbutton_a5_align.get_active():       
@@ -1036,7 +1091,6 @@ class Apropos_Dialog:
         self.aboutdialog.set_position(Gtk.WindowPosition.CENTER)
         self.aboutdialog.set_version(__VERSION__)
         self.aboutdialog.set_comments('A GTK Gui for the excellent Enfuse.\n\n2014 (c) Dariusz Duma\n<dhor@toxic.net.pl>')
-        # self.aboutdialog.set_copyright(__COPYRIGHT__)
         self.aboutdialog.set_website(__WEBSITE__)
         self.pixbuf = GdkPixbuf.Pixbuf.new_from_file(IMG + "macrofusion.png")
         self.aboutdialog.set_logo(self.pixbuf)
@@ -1059,7 +1113,5 @@ if __name__ == "__main__":
     if (len(sys.argv)>1):     
         files = sys.argv[1:]
         Gui.put_files_to_the_list(files)
-#        if len(Gui.liststoreimport) == 0:
-#            Gui.messageinthebottle(_("\nCan work only with JPEG or TIFF files."))
 
     Gtk.main()
