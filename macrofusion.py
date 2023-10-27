@@ -168,11 +168,6 @@ class DataProvider:
         self.settings = settings
         self.update_folders()
         settings["cpus"] = multiprocessing.cpu_count()
-        if settings["cpus"] > 1 and self.check_install("enfuse-mp"):
-            print("Will use all the powers of your CPU!")
-            settings["enfuser"] = "enfuse-mp"
-        else:  
-            settings["enfuser"] = "enfuse"
 
     def update_folders(self):        
         # save tmp files in current working folder
@@ -285,7 +280,6 @@ class Interface:
         self.buttonaddfile = self.gui.get_object("buttonaddfile")
         self.buttondelfile = self.gui.get_object("buttondelfile")
         self.statusbar = self.gui.get_object("status1")
-        self.statusbar.push(1,(_("CPU Cores: %s") % settings["cpus"]))
 
         self.hscaleexp = self.gui.get_object("hscaleexp")
         self.ajus_exp = Gtk.Adjustment(value=1, lower=0, upper=1, step_increment=0.1, page_increment=0.1, page_size=0)
